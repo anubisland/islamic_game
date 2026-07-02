@@ -542,6 +542,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
 
         {phase === "result" && (
           <PhaseContainer delay={0.1}>
+            {stars >= 2 && <ConfettiOverlay />}
             <div style={cardStyle}>
               <div
                 className="animate-scale-in"
@@ -697,6 +698,48 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
           </PhaseContainer>
         )}
       </div>
+    </div>
+  );
+}
+
+const CONFETTI = (() => {
+  const colors = ["#d4a02b", "#27ae60", "#e74c3c", "#3498db", "#f39c12", "#9b59b6"];
+  const shapes = ["circle", "square", "star"];
+  return Array.from({ length: 30 }, (_, i) => ({
+    left: Math.random() * 100,
+    delay: Math.random() * 1.5,
+    size: 6 + Math.random() * 8,
+    shape: shapes[Math.floor(Math.random() * shapes.length)],
+    color: colors[i % colors.length],
+  }));
+})();
+
+function ConfettiOverlay() {
+  return (
+    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 50 }}>
+      {CONFETTI.map((p, i) => {
+        const isStar = p.shape === "star";
+        return (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              top: "-10px",
+              left: `${p.left}%`,
+              width: isStar ? "auto" : p.size,
+              height: isStar ? "auto" : p.size,
+              fontSize: isStar ? p.size + 6 : undefined,
+              color: p.color,
+              background: isStar ? "transparent" : p.color,
+              borderRadius: p.shape === "circle" ? "50%" : p.shape === "square" ? "2px" : undefined,
+              animation: `confetti 2s ease ${p.delay}s forwards`,
+              opacity: 0,
+            }}
+          >
+            {isStar ? "★" : null}
+          </div>
+        );
+      })}
     </div>
   );
 }
