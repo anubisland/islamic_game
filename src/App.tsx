@@ -11,6 +11,7 @@ import { FlashcardPage } from "./pages/FlashcardPage";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
 import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
+import { generateDailyQuiz, getDailyChallengeDate } from "./utils/dailyQuiz";
 import { saveProgress } from "./utils/storage";
 import type { LeaderboardEntry, Stage } from "./types";
 
@@ -22,6 +23,8 @@ export default function App() {
   const [showStats, setShowStats] = useState(false);
   const [quickQuizStage, setQuickQuizStage] = useState<Stage | null>(null);
   const [flashcardStage, setFlashcardStage] = useState<Stage | null>(null);
+  const [showDaily, setShowDaily] = useState(false);
+  const [dailyDate, setDailyDate] = useState(() => localStorage.getItem("daily-challenge-date") ?? "");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(loadLeaderboard);
 
   if (currentStageIndex !== null) {
@@ -127,6 +130,31 @@ export default function App() {
     );
   }
 
+  if (showDaily) {
+    const today = getDailyChallengeDate();
+    const dailyStage: Stage = {
+      id: "daily",
+      title: `التحدي اليومي — ${today}`,
+      subtitle: "5 أسئلة عشوائية من جميع المراحل",
+      icon: "⏱️",
+      lessons: [],
+      questions: generateDailyQuiz(),
+    };
+    return (
+      <StagePage
+        stage={dailyStage}
+        onComplete={() => {
+          localStorage.setItem("daily-challenge-date", today);
+          setDailyDate(today);
+          setShowDaily(false);
+        }}
+        onBack={() => setShowDaily(false)}
+        soundEnabled={sound.enabled}
+        onToggleSound={() => sound.setEnabled(!sound.enabled)}
+      />
+    );
+  }
+
   return (
     <HomePage
       progress={progress}
@@ -136,6 +164,8 @@ export default function App() {
       onSettings={() => setShowSettings(true)}
       onStats={() => setShowStats(true)}
       onQuickQuiz={() => setQuickQuizStage(generateQuickQuiz())}
+      onDailyChallenge={() => setShowDaily(true)}
+      dailyCompleted={dailyDate === getDailyChallengeDate()}
       onReset={reset}
       soundEnabled={sound.enabled}
       onToggleSound={() => sound.setEnabled(!sound.enabled)}

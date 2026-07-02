@@ -14,12 +14,14 @@ interface Props {
   onSettings: () => void;
   onStats: () => void;
   onQuickQuiz: () => void;
+  onDailyChallenge?: () => void;
+  dailyCompleted?: boolean;
   onReset: () => void;
   soundEnabled?: boolean;
   onToggleSound?: () => void;
 }
 
-export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, onSettings, onStats, onQuickQuiz, onReset, soundEnabled, onToggleSound }: Props) {
+export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, onSettings, onStats, onQuickQuiz, onDailyChallenge, dailyCompleted, onReset, soundEnabled, onToggleSound }: Props) {
   const completedCount = Object.values(progress.stages).filter((s) => s.completed).length;
   const pct = stages.length > 0 ? (completedCount / stages.length) * 100 : 0;
   const unlockedIds = progress.achievements ?? [];
@@ -108,7 +110,26 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
             </div>
           </div>
 
-          <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          <div style={{ textAlign: "center", marginTop: "1rem", display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
+            {onDailyChallenge && (
+              <button
+                onClick={onDailyChallenge}
+                style={{
+                  background: dailyCompleted ? "var(--card-bg)" : "linear-gradient(135deg, #3498db, #2980b9)",
+                  color: dailyCompleted ? "var(--text-light)" : "#fff",
+                  padding: "0.7rem 1.5rem",
+                  borderRadius: 10,
+                  fontSize: "1rem",
+                  fontWeight: 700,
+                  border: dailyCompleted ? "2px solid var(--green-light)" : "none",
+                  boxShadow: dailyCompleted ? "none" : "0 3px 12px rgba(52,152,219,0.35)",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+              >
+                {dailyCompleted ? "✅ اكتمل التحدي اليومي" : "⏱️ التحدي اليومي"}
+              </button>
+            )}
             <button
               onClick={onQuickQuiz}
               style={{
