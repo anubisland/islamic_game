@@ -4,12 +4,14 @@
   "version": "0.1.0",
   "type": "module",
   "description": "رحلة الإيمان — لعبة إسلامية تعليمية",
+  "homepage": "https://anubisland.github.io/islamic_game",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "deploy": "npm run build && gh-pages -d dist -b gh-pages"
   },
   "dependencies": {
     "react": "^19.2.7",
@@ -23,6 +25,7 @@
     "eslint": "^10.6.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
+    "gh-pages": "^6.3.0",
     "prettier": "^3.9.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.62.1",

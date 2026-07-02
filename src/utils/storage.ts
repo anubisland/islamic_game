@@ -5,11 +5,14 @@ const STORAGE_KEY = "islamic-quest-progress";
 export function loadProgress(): GameProgress {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as GameProgress;
+    if (raw) {
+      const parsed = JSON.parse(raw) as GameProgress;
+      return { stages: parsed.stages ?? {}, achievements: parsed.achievements ?? [] };
+    }
   } catch {
     /* ignore corrupt data */
   }
-  return { stages: {} };
+  return { stages: {}, achievements: [] };
 }
 
 export function saveProgress(progress: GameProgress): void {
@@ -27,4 +30,12 @@ export function updateStageProgress(
     [stageId]: { ...next.stages[stageId], ...updates, stageId },
   };
   return next;
+}
+
+export function addAchievement(
+  progress: GameProgress,
+  achievementId: string,
+): GameProgress {
+  if (progress.achievements.includes(achievementId)) return progress;
+  return { ...progress, achievements: [...progress.achievements, achievementId] };
 }

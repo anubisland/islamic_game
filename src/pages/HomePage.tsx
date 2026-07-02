@@ -1,52 +1,86 @@
-import type { GameProgress } from "../types";
+import type { GameProgress, LeaderboardEntry } from "../types";
 import { stages } from "../data/stages";
+import { achievements } from "../data/achievements";
 import { StageCard } from "../components/StageCard";
+import { AchievementBadge } from "../components/AchievementBadge";
+import { Leaderboard } from "../components/Leaderboard";
 import { Header } from "../components/Header";
 
 interface Props {
   progress: GameProgress;
+  leaderboard: LeaderboardEntry[];
   onSelectStage: (index: number) => void;
   onReset: () => void;
 }
 
-export function HomePage({ progress, onSelectStage, onReset }: Props) {
+export function HomePage({ progress, leaderboard, onSelectStage, onReset }: Props) {
   const completedCount = Object.values(progress.stages).filter((s) => s.completed).length;
+  const pct = stages.length > 0 ? (completedCount / stages.length) * 100 : 0;
+  const unlockedIds = progress.achievements ?? [];
 
   return (
     <div>
       <Header />
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1rem" }}>
+
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "2rem 1rem" }}>
         <div
+          className="animate-fade-in-up"
           style={{
             textAlign: "center",
-            marginBottom: "2rem",
-            background: "var(--card-bg)",
+            marginBottom: "2.5rem",
+            background: "linear-gradient(135deg, var(--card-bg), #faf8f4)",
             borderRadius: "var(--radius)",
-            padding: "1.5rem",
+            padding: "2rem 1.5rem",
             boxShadow: "var(--shadow)",
+            border: "1px solid var(--card-border)",
           }}
         >
-          <p style={{ fontSize: "1rem", color: "var(--text-light)" }}>
-            أكملت {completedCount} من {stages.length} مراحل
+          <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--green-primary)" }}>
+            🕌 مرحباً بك في رحلة الإيمان
           </p>
-          <div
+          <p
             style={{
-              height: 8,
-              background: "#e0e0e0",
-              borderRadius: 4,
-              marginTop: "0.75rem",
-              overflow: "hidden",
+              fontSize: "0.9rem",
+              color: "var(--text-light)",
+              marginTop: "0.5rem",
+              marginBottom: "1rem",
             }}
           >
+            اختر مرحلة وابدأ التعلم
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              justifyContent: "center",
+            }}
+          >
+            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-light)", whiteSpace: "nowrap" }}>
+              {completedCount} / {stages.length}
+            </span>
             <div
               style={{
-                height: "100%",
-                width: `${(completedCount / stages.length) * 100}%`,
-                background: "linear-gradient(90deg, var(--green-light), var(--gold))",
-                borderRadius: 4,
-                transition: "width 0.4s",
+                flex: 1,
+                maxWidth: 300,
+                height: 10,
+                background: "var(--progress-bg)",
+                borderRadius: 5,
+                overflow: "hidden",
               }}
-            />
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${pct}%`,
+                  background: "linear-gradient(90deg, var(--green-light), var(--gold))",
+                  borderRadius: 5,
+                  transition: "width 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+                  position: "relative",
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -54,7 +88,7 @@ export function HomePage({ progress, onSelectStage, onReset }: Props) {
           style={{
             display: "flex",
             flexWrap: "wrap",
-            gap: "1rem",
+            gap: "1.25rem",
             justifyContent: "center",
           }}
         >
@@ -62,31 +96,92 @@ export function HomePage({ progress, onSelectStage, onReset }: Props) {
             const prev = i === 0 ? undefined : progress.stages[stages[i - 1].id];
             const locked = i > 0 && !prev?.completed;
             return (
-              <StageCard
+              <div
                 key={stage.id}
-                stage={stage}
-                progress={progress.stages[stage.id]}
-                locked={locked}
-                onClick={() => onSelectStage(i)}
-              />
+                className="animate-fade-in-up"
+                style={{
+                  animationDelay: `${i * 0.1}s`,
+                  animationFillMode: "both",
+                }}
+              >
+                <StageCard
+                  stage={stage}
+                  progress={progress.stages[stage.id]}
+                  locked={locked}
+                  onClick={() => onSelectStage(i)}
+                />
+              </div>
             );
           })}
         </div>
 
+        {unlockedIds.length > 0 && (
+          <div
+            className="animate-fade-in"
+            style={{ marginTop: "2.5rem" }}
+          >
+            <h3
+              style={{
+                textAlign: "center",
+                fontSize: "1rem",
+                fontWeight: 700,
+                color: "var(--green-primary)",
+                marginBottom: "1rem",
+              }}
+            >
+              🏅 الشارات
+            </h3>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "0.75rem",
+                justifyContent: "center",
+              }}
+            >
+              {achievements.map((ach) => (
+                <AchievementBadge
+                  key={ach.id}
+                  achievement={ach}
+                  unlocked={unlockedIds.includes(ach.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {leaderboard.length > 0 && (
+          <div style={{ marginTop: "2rem" }}>
+            <Leaderboard entries={leaderboard} />
+          </div>
+        )}
+
         {completedCount > 0 && (
-          <div style={{ textAlign: "center", marginTop: "2rem" }}>
+          <div
+            className="animate-fade-in"
+            style={{ textAlign: "center", marginTop: "2.5rem" }}
+          >
             <button
               onClick={onReset}
               style={{
                 background: "transparent",
                 color: "var(--text-light)",
-                padding: "0.4rem 1.2rem",
+                padding: "0.5rem 1.5rem",
                 borderRadius: 8,
-                border: "1px solid #ccc",
-                fontSize: "0.8rem",
+                border: "1px solid var(--border)",
+                fontSize: "0.82rem",
+                fontWeight: 600,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "#e74c3c";
+                e.currentTarget.style.color = "#e74c3c";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "#d0ccc4";
+                e.currentTarget.style.color = "var(--text-light)";
               }}
             >
-              إعادة تعيين التقدم
+              ← إعادة تعيين التقدم
             </button>
           </div>
         )}

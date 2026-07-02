@@ -1,0 +1,58 @@
+import type { Achievement } from "../types";
+
+export const achievements: Achievement[] = [
+  {
+    id: "first-step",
+    title: "الخطوة الأولى",
+    description: "أكمل أول مرحلة في اللعبة",
+    icon: "👣",
+  },
+  {
+    id: "knowledge-seeker",
+    title: "طالب العلم",
+    description: "أكمل 3 مراحل",
+    icon: "📚",
+  },
+  {
+    id: "faith-journey",
+    title: "رحلة الإيمان",
+    description: "أكمل جميع المراحل الخمس",
+    icon: "🕌",
+  },
+  {
+    id: "golden-star",
+    title: "النجمة الذهبية",
+    description: "احصل على 3 نجوم في أي مرحلة",
+    icon: "⭐",
+  },
+  {
+    id: "perfectionist",
+    title: "الكمال",
+    description: "احصل على 3 نجوم في جميع المراحل",
+    icon: "💎",
+  },
+  {
+    id: "full-score",
+    title: "الدرجة الكاملة",
+    description: "أجب على جميع الأسئلة بشكل صحيح في مرحلة واحدة",
+    icon: "🎯",
+  },
+];
+
+export function checkAchievements(
+  completedStages: number,
+  totalStages: number,
+  stageStars: Record<string, number>,
+): string[] {
+  const earned: string[] = [];
+  const allStarCounts = Object.values(stageStars);
+
+  if (completedStages >= 1) earned.push("first-step");
+  if (completedStages >= 3) earned.push("knowledge-seeker");
+  if (completedStages >= totalStages) earned.push("faith-journey");
+  if (allStarCounts.some((s) => s >= 3)) earned.push("golden-star");
+  if (allStarCounts.length === totalStages && allStarCounts.every((s) => s >= 3)) {
+    earned.push("perfectionist");
+  }
+  return earned;
+}

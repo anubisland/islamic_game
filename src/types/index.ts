@@ -29,6 +29,24 @@ export interface StageProgress {
   stars: number;
 }
 
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+}
+
+export interface LeaderboardEntry {
+  stageId: string;
+  stageTitle: string;
+  stageIcon: string;
+  score: number;
+  total: number;
+  stars: number;
+  date: string;
+}
+
 export interface GameProgress {
   stages: Record<string, StageProgress>;
+  achievements: string[];
 }

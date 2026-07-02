@@ -1,6 +1,11 @@
 import { useState, useCallback } from "react";
 import type { GameProgress } from "../types";
-import { loadProgress, saveProgress, updateStageProgress } from "../utils/storage";
+import {
+  loadProgress,
+  saveProgress,
+  updateStageProgress,
+  addAchievement as addAchievementUtil,
+} from "../utils/storage";
 
 export function useProgress() {
   const [progress, setProgress] = useState<GameProgress>(loadProgress);
@@ -17,11 +22,18 @@ export function useProgress() {
     [progress, save],
   );
 
+  const addAchievement = useCallback(
+    (achievementId: string) => {
+      save(addAchievementUtil(progress, achievementId));
+    },
+    [progress, save],
+  );
+
   const reset = useCallback(() => {
-    const empty: GameProgress = { stages: {} };
+    const empty: GameProgress = { stages: {}, achievements: [] };
     setProgress(empty);
     saveProgress(empty);
   }, []);
 
-  return { progress, updateStage, reset };
+  return { progress, updateStage, addAchievement, reset };
 }
