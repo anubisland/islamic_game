@@ -15,16 +15,18 @@ interface Props {
   onStats: () => void;
   onQuickQuiz: () => void;
   onReset: () => void;
+  soundEnabled?: boolean;
+  onToggleSound?: () => void;
 }
 
-export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, onSettings, onStats, onQuickQuiz, onReset }: Props) {
+export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, onSettings, onStats, onQuickQuiz, onReset, soundEnabled, onToggleSound }: Props) {
   const completedCount = Object.values(progress.stages).filter((s) => s.completed).length;
   const pct = stages.length > 0 ? (completedCount / stages.length) * 100 : 0;
   const unlockedIds = progress.achievements ?? [];
 
   return (
     <div>
-      <Header />
+      <Header soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
 
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "1.5rem 0.75rem" }}>
         <div

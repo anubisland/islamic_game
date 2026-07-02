@@ -4,12 +4,14 @@ import { Header } from "../components/Header";
 interface Props {
   stats: GameStats;
   onBack: () => void;
+  soundEnabled?: boolean;
+  onToggleSound?: () => void;
 }
 
-export function StatsPage({ stats, onBack }: Props) {
+export function StatsPage({ stats, onBack, soundEnabled, onToggleSound }: Props) {
   return (
     <div>
-      <Header onHome={onBack} title="الإحصاءات" />
+      <Header onHome={onBack} title="الإحصاءات" soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
 
       <div style={{ maxWidth: 500, margin: "0 auto", padding: "1rem 0.6rem" }}>
         <div

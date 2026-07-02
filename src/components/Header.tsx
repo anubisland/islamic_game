@@ -3,9 +3,11 @@ import { useTheme } from "../hooks/useTheme";
 interface Props {
   onHome?: () => void;
   title?: string;
+  soundEnabled?: boolean;
+  onToggleSound?: () => void;
 }
 
-export function Header({ onHome, title }: Props) {
+export function Header({ onHome, title, soundEnabled, onToggleSound }: Props) {
   const { theme, toggle } = useTheme();
 
   return (
@@ -20,6 +22,16 @@ export function Header({ onHome, title }: Props) {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexShrink: 0 }}>
+          {onToggleSound !== undefined && (
+            <button
+              onClick={onToggleSound}
+              style={styles.themeBtn}
+              title={soundEnabled ? "كتم الصوت" : "تشغيل الصوت"}
+            >
+              {soundEnabled ? "🔊" : "🔇"}
+            </button>
+          )}
+
           <button
             onClick={toggle}
             style={styles.themeBtn}

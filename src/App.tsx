@@ -31,6 +31,8 @@ export default function App() {
         stage={stage}
         difficulty={progress.difficulty ?? "normal"}
         onSetDifficulty={setDifficulty}
+        soundEnabled={sound.enabled}
+        onToggleSound={() => sound.setEnabled(!sound.enabled)}
         onComplete={(score, total) => {
           const stars = score >= total * 0.9 ? 3 : score >= total * 0.6 ? 2 : score > 0 ? 1 : 0;
           updateStage(stage.id, { completed: true, score, totalQuestions: total, stars });
@@ -90,6 +92,8 @@ export default function App() {
       <StatsPage
         stats={computeStats(progress, achievements.length)}
         onBack={() => setShowStats(false)}
+        soundEnabled={sound.enabled}
+        onToggleSound={() => sound.setEnabled(!sound.enabled)}
       />
     );
   }
@@ -100,6 +104,8 @@ export default function App() {
         stage={quickQuizStage}
         onComplete={() => setQuickQuizStage(null)}
         onBack={() => setQuickQuizStage(null)}
+        soundEnabled={sound.enabled}
+        onToggleSound={() => sound.setEnabled(!sound.enabled)}
       />
     );
   }
@@ -125,6 +131,8 @@ export default function App() {
       onStats={() => setShowStats(true)}
       onQuickQuiz={() => setQuickQuizStage(generateQuickQuiz())}
       onReset={reset}
+      soundEnabled={sound.enabled}
+      onToggleSound={() => sound.setEnabled(!sound.enabled)}
     />
   );
 }

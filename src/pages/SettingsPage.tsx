@@ -17,7 +17,7 @@ export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack }: P
 
   return (
     <div>
-      <Header onHome={onBack} title="الإعدادات" />
+      <Header onHome={onBack} title="الإعدادات" soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
 
       <div style={{ maxWidth: 500, margin: "0 auto", padding: "1rem 0.6rem" }}>
         <div

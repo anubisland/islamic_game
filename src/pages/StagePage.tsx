@@ -25,6 +25,8 @@ interface Props {
   onSetDifficulty?: (d: Difficulty) => void;
   onComplete: (score: number, total: number) => void;
   onBack: () => void;
+  soundEnabled?: boolean;
+  onToggleSound?: () => void;
 }
 
 function calcStars(s: number, total: number): number {
@@ -49,7 +51,7 @@ function PhaseContainer({ children, delay = 0 }: { children: React.ReactNode; de
   );
 }
 
-export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onComplete, onBack }: Props) {
+export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onComplete, onBack, soundEnabled, onToggleSound }: Props) {
   const sound = useSound();
   const config = DIFFICULTY_CONFIG[difficulty];
   const [phase, setPhase] = useState<Phase>("intro");
@@ -175,7 +177,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
 
   return (
     <div>
-      <Header onHome={onBack} title={stage.title} />
+      <Header onHome={onBack} title={stage.title} soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
 
       <div style={{ maxWidth: 700, margin: "0 auto", padding: "1rem 0.6rem" }}>
         {phase === "intro" && (
