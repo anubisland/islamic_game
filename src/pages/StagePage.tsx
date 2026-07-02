@@ -5,6 +5,7 @@ import { useSound } from "../hooks/useSound";
 import { shuffleQuestions } from "../utils/shuffle";
 
 const DIFFICULTY_CONFIG: Record<Difficulty, { time: number; lives: number }> = {
+  practice: { time: 0, lives: 999 },
   easy: { time: 20, lives: 5 },
   normal: { time: 15, lives: 3 },
   hard: { time: 10, lives: 2 },
@@ -76,7 +77,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
   }
 
   useEffect(() => {
-    if (phase !== "quiz" || showExplanation) {
+    if (phase !== "quiz" || showExplanation || config.time === 0) {
       clearTimer();
       return;
     }
@@ -124,12 +125,14 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
           explanation: q.explanation,
         },
       ]);
-      const nextLives = lives - 1;
-      setLives(nextLives);
-      if (nextLives <= 0) {
-        setTimeout(() => {
-          setPhase("result");
-        }, 1500);
+      if (difficulty !== "practice") {
+        const nextLives = lives - 1;
+        setLives(nextLives);
+        if (nextLives <= 0) {
+          setTimeout(() => {
+            setPhase("result");
+          }, 1500);
+        }
       }
     }
   }
@@ -222,16 +225,19 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                     gap: "0.5rem",
                     justifyContent: "center",
                     marginBottom: "1rem",
+                    flexWrap: "wrap",
                   }}
                 >
-                  {(["easy", "normal", "hard"] as Difficulty[]).map((d) => {
+                  {(["practice", "easy", "normal", "hard"] as Difficulty[]).map((d) => {
                     const labels: Record<Difficulty, string> = {
+                      practice: "🧘 تدريبي",
                       easy: "سهل 🟢",
                       normal: "متوسط 🟡",
                       hard: "صعب 🔴",
                     };
                     const isActive = difficulty === d;
                     const colors: Record<Difficulty, string> = {
+                      practice: "var(--green-light)",
                       easy: "#27ae60",
                       normal: "var(--gold)",
                       hard: "#e74c3c",
@@ -381,16 +387,23 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
               >
                 <span>سؤال {questionIndex + 1} من {shuffledQuestions.length}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                  <span style={{ display: "flex", gap: "0.2rem", fontSize: "1rem" }}>
-                    {Array.from({ length: config.lives }, (_, i) => (
-                      <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>
-                        ❤️
-                      </span>
-                    ))}
-                  </span>
+                  {difficulty !== "practice" && (
+                    <span style={{ display: "flex", gap: "0.2rem", fontSize: "1rem" }}>
+                      {Array.from({ length: config.lives }, (_, i) => (
+                        <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>
+                          ❤️
+                        </span>
+                      ))}
+                    </span>
+                  )}
                   <span style={{ fontWeight: 700, color: "var(--green-primary)" }}>
                     {score} ✓
                   </span>
+                  {difficulty === "practice" && (
+                    <span style={{ fontSize: "0.78rem", color: "var(--green-light)", fontWeight: 600 }}>
+                      🧘 تدريبي
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -414,31 +427,33 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                 />
               </div>
 
-              <div
-                style={{
-                  height: 6,
-                  background: "var(--progress-bg)",
-                  borderRadius: 3,
-                  marginBottom: "1.25rem",
-                  overflow: "hidden",
-                  direction: "ltr",
-                }}
-              >
+              {difficulty !== "practice" && (
                 <div
                   style={{
-                    height: "100%",
-                    width: `${(timeLeft / config.time) * 100}%`,
-                    background:
-                      timeLeft > 10
-                        ? "var(--green-light)"
-                        : timeLeft > 5
-                          ? "var(--gold)"
-                          : "#e74c3c",
+                    height: 6,
+                    background: "var(--progress-bg)",
                     borderRadius: 3,
-                    transition: "width 1s linear",
+                    marginBottom: "1.25rem",
+                    overflow: "hidden",
+                    direction: "ltr",
                   }}
-                />
-              </div>
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${(timeLeft / config.time) * 100}%`,
+                      background:
+                        timeLeft > 10
+                          ? "var(--green-light)"
+                          : timeLeft > 5
+                            ? "var(--gold)"
+                            : "#e74c3c",
+                      borderRadius: 3,
+                      transition: "width 1s linear",
+                    }}
+                  />
+                </div>
+              )}
 
               <h3
                 className="animate-slide-down"
