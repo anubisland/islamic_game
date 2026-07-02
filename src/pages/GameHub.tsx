@@ -100,6 +100,19 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
             onClick={() => onSelectGame("faith-journey")}
           />
 
+          {/* Raqesh — Architect Game */}
+          <GameCard
+            icon="🎨"
+            title={lang === "ar" ? "رقش — المهندس المسلم" : "Raqesh — Muslim Architect"}
+            subtitle={lang === "ar" ? "ألغاز التناظر الهندسي من العمارة الإسلامية" : "Symmetry puzzles from Islamic architecture"}
+            desc={lang === "ar"
+              ? "أكمل الأنماط الهندسية المتناظرة من روائع العمارة الإسلامية عبر العصور: الأموي، العباسي، الأندلس، والعثماني. كل لغز يعرّفك على معلم معماري إسلامي فريد."
+              : "Complete symmetric geometric patterns from Islamic architecture masterpieces across ages: Umayyad, Abbasid, Andalusia, and Ottoman. Each puzzle teaches you about a unique Islamic architectural wonder."}
+            stagesCount={12}
+            questionsCount={12}
+            onClick={() => onSelectGame("architect")}
+          />
+
           {/* Future game placeholder */}
           <div
             className="animate-fade-in-up"

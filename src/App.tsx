@@ -9,6 +9,9 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { StatsPage } from "./pages/StatsPage";
 import { FlashcardPage } from "./pages/FlashcardPage";
 import { GameHub } from "./pages/GameHub";
+import { ArchitectHome } from "./games/architect/pages/ArchitectHome";
+import { PuzzlePage } from "./games/architect/pages/PuzzlePage";
+import type { ArchitectStage } from "./games/architect/data/stages";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
 import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
@@ -24,7 +27,9 @@ type Screen =
   | { id: "stats" }
   | { id: "quick-quiz" }
   | { id: "flashcard"; index: number }
-  | { id: "daily" };
+  | { id: "daily" }
+  | { id: "architect" }
+  | { id: "architect-puzzle"; stage: ArchitectStage };
 
 export default function App() {
   const sound = useSound();
@@ -172,6 +177,31 @@ export default function App() {
     );
   }
 
+  if (screen.id === "architect") {
+    return (
+      <ArchitectHome
+        onSelectPuzzle={(stage) => setScreen({ id: "architect-puzzle", stage })}
+        onBack={() => setScreen({ id: "hub" })}
+        completedPuzzles={{}}
+        puzzleStars={{}}
+        soundEnabled={sound.enabled}
+        onToggleSound={() => sound.setEnabled(!sound.enabled)}
+      />
+    );
+  }
+
+  if (screen.id === "architect-puzzle") {
+    return (
+      <PuzzlePage
+        stage={screen.stage}
+        onComplete={() => {
+          setScreen({ id: "architect" });
+        }}
+        onBack={() => setScreen({ id: "architect" })}
+      />
+    );
+  }
+
   if (screen.id === "daily") {
     const today = getDailyChallengeDate();
     const dailyTitle = lang === "ar"
@@ -204,6 +234,7 @@ export default function App() {
     <GameHub
       onSelectGame={(gameId) => {
         if (gameId === "faith-journey") setScreen({ id: "home" });
+        if (gameId === "architect") setScreen({ id: "architect" });
       }}
       soundEnabled={sound.enabled}
       onToggleSound={() => sound.setEnabled(!sound.enabled)}
