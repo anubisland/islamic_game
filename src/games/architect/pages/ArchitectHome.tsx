@@ -27,7 +27,7 @@ export function ArchitectHome({ onSelectPuzzle, onBack, completedPuzzles, puzzle
         <div style={headerInner}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <h1 style={{ fontSize: "1.15rem", fontWeight: 800, cursor: "pointer", letterSpacing: "0.5px" }} onClick={onBack}>
-              🎨 {lang === "ar" ? "رقش" : "Raqesh"}
+              🎨 {lang === "ar" ? "المهندس المسلم" : "Muslim Architect"}
             </h1>
             {selectedEra && (
               <span style={{ fontSize: "0.82rem", opacity: 0.8 }}>— {architectStages.find(s => s.id.startsWith(selectedEra))?.era}</span>

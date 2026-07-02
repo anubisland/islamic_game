@@ -100,10 +100,10 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
             onClick={() => onSelectGame("faith-journey")}
           />
 
-          {/* Raqesh — Architect Game */}
+          {/* Architect Game */}
           <GameCard
             icon="🎨"
-            title={lang === "ar" ? "رقش — المهندس المسلم" : "Raqesh — Muslim Architect"}
+            title={lang === "ar" ? "المهندس المسلم" : "Muslim Architect"}
             subtitle={lang === "ar" ? "ألغاز التناظر الهندسي من العمارة الإسلامية" : "Symmetry puzzles from Islamic architecture"}
             desc={lang === "ar"
               ? "أكمل الأنماط الهندسية المتناظرة من روائع العمارة الإسلامية عبر العصور: الأموي، العباسي، الأندلس، والعثماني. كل لغز يعرّفك على معلم معماري إسلامي فريد."
