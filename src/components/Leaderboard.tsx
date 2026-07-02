@@ -13,7 +13,7 @@ export function Leaderboard({ entries }: Props) {
       style={{
         background: "var(--card-bg)",
         borderRadius: "var(--radius)",
-        padding: "1.25rem 1.5rem",
+        padding: "1rem",
         boxShadow: "var(--shadow)",
         maxWidth: 500,
         margin: "0 auto",

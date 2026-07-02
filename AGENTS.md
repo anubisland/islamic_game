@@ -11,7 +11,7 @@ src/
 ├── index.css         — المتغيرات والأسس
 ├── types/index.ts    — الأنواع: Stage, Question, GameProgress, Achievement, LeaderboardEntry
 ├── data/
-│   ├── stages.ts     — محتوى المراحل الـ 8 (دروس + أسئلة)
+│   ├── stages.ts     — محتوى المراحل الـ 11 (دروس + أسئلة)
 │   └── achievements.ts — الشارات والإنجازات
 ├── hooks/
 │   ├── useProgress   — إدارة التقدم (localStorage)

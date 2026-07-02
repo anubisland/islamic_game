@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import type { Stage, StageProgress } from "../types";
 import { Header } from "../components/Header";
 import { useSound } from "../hooks/useSound";
+import { shuffleQuestions } from "../utils/shuffle";
 
 const TIME_PER_QUESTION = 15;
+const MAX_LIVES = 3;
 
 type Phase = "intro" | "lessons" | "quiz" | "result";
 
@@ -46,8 +48,10 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
   const [showExplanation, setShowExplanation] = useState(false);
   const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION);
   const [timeExpired, setTimeExpired] = useState(false);
+  const [lives, setLives] = useState(MAX_LIVES);
+  const [shuffledQuestions, setShuffledQuestions] = useState(shuffleQuestions(stage.questions));
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const stars = calcStars(score, stage.questions.length);
+  const stars = calcStars(score, shuffledQuestions.length);
 
   function clearTimer() {
     if (timerRef.current !== null) {
@@ -80,11 +84,18 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
     clearTimer();
     setSelectedAnswer(index);
     setShowExplanation(true);
-    if (index === stage.questions[questionIndex].correctIndex) {
+    if (index === shuffledQuestions[questionIndex].correctIndex) {
       setScore((s) => s + 1);
       sound.correct();
     } else {
       sound.wrong();
+      const nextLives = lives - 1;
+      setLives(nextLives);
+      if (nextLives <= 0) {
+        setTimeout(() => {
+          setPhase("result");
+        }, 1500);
+      }
     }
   }
 
@@ -94,7 +105,8 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
     setShowExplanation(false);
     setTimeLeft(TIME_PER_QUESTION);
     setTimeExpired(false);
-    if (questionIndex < stage.questions.length - 1) {
+    if (lives <= 0) return;
+    if (questionIndex < shuffledQuestions.length - 1) {
       setQuestionIndex((i) => i + 1);
     } else {
       sound.complete();
@@ -104,10 +116,10 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
 
   function handleBackToStages() {
     sound.click();
-    onComplete(score, stage.questions.length);
+    onComplete(score, shuffledQuestions.length);
   }
 
-  const currentQuestion = stage.questions[questionIndex];
+  const currentQuestion = shuffledQuestions[questionIndex];
   const btnPrimary: React.CSSProperties = {
     background: "linear-gradient(135deg, var(--green-primary), var(--green-dark))",
     color: "#fff",
@@ -132,7 +144,7 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
     <div>
       <Header onHome={onBack} title={stage.title} />
 
-      <div style={{ maxWidth: 700, margin: "0 auto", padding: "1.5rem 1rem" }}>
+      <div style={{ maxWidth: 700, margin: "0 auto", padding: "1rem 0.6rem" }}>
         {phase === "intro" && (
           <PhaseContainer>
             <div style={cardStyle}>
@@ -267,7 +279,7 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                       background: "linear-gradient(135deg, var(--gold), #b8922a)",
                       boxShadow: "0 2px 8px rgba(212,160,43,0.3)",
                     }}
-                    onClick={() => { sound.click(); setPhase("quiz"); }}
+                    onClick={() => { sound.click(); setLives(MAX_LIVES); setShuffledQuestions(shuffleQuestions(stage.questions)); setPhase("quiz"); }}
                   >
                     ابدأ الاختبار
                   </button>
@@ -289,10 +301,19 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                   color: "var(--text-light)",
                 }}
               >
-                <span>سؤال {questionIndex + 1} من {stage.questions.length}</span>
-                <span style={{ fontWeight: 700, color: "var(--green-primary)" }}>
-                  {score} ✓
-                </span>
+                <span>سؤال {questionIndex + 1} من {shuffledQuestions.length}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                  <span style={{ display: "flex", gap: "0.2rem", fontSize: "1rem" }}>
+                    {Array.from({ length: MAX_LIVES }, (_, i) => (
+                      <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>
+                        ❤️
+                      </span>
+                    ))}
+                  </span>
+                  <span style={{ fontWeight: 700, color: "var(--green-primary)" }}>
+                    {score} ✓
+                  </span>
+                </div>
               </div>
 
               <div
@@ -307,7 +328,7 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                 <div
                   style={{
                     height: "100%",
-                    width: `${((questionIndex + 1) / stage.questions.length) * 100}%`,
+                    width: `${((questionIndex + 1) / shuffledQuestions.length) * 100}%`,
                     background: "var(--gold)",
                     borderRadius: 2,
                     transition: "width 0.4s",
@@ -372,7 +393,7 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                     <button
                       key={i}
                       style={{
-                        padding: "0.9rem 1rem",
+                        padding: "0.85rem 0.9rem",
                         borderRadius: 10,
                         background: bg,
                         border,
@@ -428,11 +449,13 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                     marginTop: "1.25rem",
                     width: "100%",
                   }}
-                  onClick={nextQuestion}
+                  onClick={lives <= 0 ? () => { sound.click(); setPhase("result"); } : nextQuestion}
                 >
-                  {questionIndex < stage.questions.length - 1
-                    ? "التالي ←"
-                    : "عرض النتيجة 🎯"}
+                  {lives <= 0
+                    ? "عرض النتيجة 🎯"
+                    : questionIndex < shuffledQuestions.length - 1
+                      ? "التالي ←"
+                      : "عرض النتيجة 🎯"}
                 </button>
               )}
             </div>
@@ -457,9 +480,9 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                   fontSize: "1.3rem",
                 }}
               >
-                {score === stage.questions.length
+                {score === shuffledQuestions.length
                   ? "إتقان تام! أحسنت"
-                  : score >= stage.questions.length * 0.6
+                  : score >= shuffledQuestions.length * 0.6
                     ? "جيد جداً! واصل التقدم"
                     : "حاول مرة أخرى لتتحسن"}
               </h2>
@@ -468,7 +491,7 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                 className="animate-fade-in"
                 style={{ fontSize: "1.1rem", color: "var(--text-light)", marginBottom: "1rem" }}
               >
-                حصلت على {score} من {stage.questions.length}
+                حصلت على {score} من {shuffledQuestions.length}
               </p>
 
               <div
@@ -524,7 +547,7 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
 const cardStyle: React.CSSProperties = {
   background: "var(--card-bg)",
   borderRadius: "var(--radius)",
-  padding: "2rem",
+  padding: "1.25rem",
   boxShadow: "var(--shadow-lg)",
   border: "1px solid var(--card-border)",
 };

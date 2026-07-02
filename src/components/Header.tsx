@@ -11,13 +11,15 @@ export function Header({ onHome, title }: Props) {
   return (
     <header style={styles.header}>
       <div style={styles.inner}>
-        <h1 style={styles.logo} onClick={onHome}>
-          🌙 رحلة الإيمان
-        </h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", overflow: "hidden" }}>
+          <h1 style={styles.logo} onClick={onHome}>
+            🌙 رحلة الإيمان
+          </h1>
 
-        {title && <span style={styles.title}>{title}</span>}
+          {title && <span style={styles.title}>{title}</span>}
+        </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexShrink: 0 }}>
           <button
             onClick={toggle}
             style={styles.themeBtn}
@@ -41,7 +43,7 @@ const styles: Record<string, React.CSSProperties> = {
   header: {
     background: "linear-gradient(135deg, var(--green-primary), var(--green-dark))",
     color: "#fff",
-    padding: "0.75rem 1.5rem",
+    padding: "0.6rem 0.75rem",
     position: "sticky",
     top: 0,
     zIndex: 100,

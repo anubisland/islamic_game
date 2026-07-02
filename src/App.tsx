@@ -1,17 +1,24 @@
 import { useState } from "react";
 import { stages } from "./data/stages";
-import { checkAchievements } from "./data/achievements";
+import { achievements, checkAchievements } from "./data/achievements";
 import { useProgress } from "./hooks/useProgress";
 import { useSound } from "./hooks/useSound";
 import { HomePage } from "./pages/HomePage";
 import { StagePage } from "./pages/StagePage";
+import { SettingsPage } from "./pages/SettingsPage";
+import { StatsPage } from "./pages/StatsPage";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
-import type { LeaderboardEntry } from "./types";
+import { computeStats } from "./utils/stats";
+import { generateQuickQuiz } from "./utils/quickQuiz";
+import type { LeaderboardEntry, Stage } from "./types";
 
 export default function App() {
   const sound = useSound();
   const { progress, updateStage, addAchievement, reset } = useProgress();
   const [currentStageIndex, setCurrentStageIndex] = useState<number | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [quickQuizStage, setQuickQuizStage] = useState<Stage | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(loadLeaderboard);
 
   if (currentStageIndex !== null) {
@@ -47,7 +54,11 @@ export default function App() {
           stageStars[stage.id] = stars;
 
           let newUnlock = false;
-          checkAchievements(completedCount, stages.length, stageStars).forEach((id) => {
+          const completedIds = Object.entries(progress.stages)
+            .filter(([, p]) => p.completed)
+            .map(([id]) => id);
+          if (!completedIds.includes(stage.id) && stars > 0) completedIds.push(stage.id);
+          checkAchievements(completedCount, stages.length, stageStars, completedIds).forEach((id) => {
             if (!progress.achievements?.includes(id)) {
               addAchievement(id);
               newUnlock = true;
@@ -62,11 +73,44 @@ export default function App() {
     );
   }
 
+  if (showSettings) {
+    return (
+      <SettingsPage
+        soundEnabled={sound.enabled}
+        onToggleSound={() => sound.setEnabled(!sound.enabled)}
+        onReset={reset}
+        onBack={() => setShowSettings(false)}
+      />
+    );
+  }
+
+  if (showStats) {
+    return (
+      <StatsPage
+        stats={computeStats(progress, achievements.length)}
+        onBack={() => setShowStats(false)}
+      />
+    );
+  }
+
+  if (quickQuizStage) {
+    return (
+      <StagePage
+        stage={quickQuizStage}
+        onComplete={() => setQuickQuizStage(null)}
+        onBack={() => setQuickQuizStage(null)}
+      />
+    );
+  }
+
   return (
     <HomePage
       progress={progress}
       leaderboard={leaderboard}
       onSelectStage={setCurrentStageIndex}
+      onSettings={() => setShowSettings(true)}
+      onStats={() => setShowStats(true)}
+      onQuickQuiz={() => setQuickQuizStage(generateQuickQuiz())}
       onReset={reset}
     />
   );

@@ -159,4 +159,18 @@ a {
   :root {
     --radius: 10px;
   }
+
+  body {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --radius: 8px;
+  }
+
+  body {
+    font-size: 14px;
+  }
 }

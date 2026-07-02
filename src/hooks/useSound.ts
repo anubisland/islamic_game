@@ -1,4 +1,23 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+const STORAGE_KEY = "islamic-quest-sound";
+
+function loadSoundEnabled(): boolean {
+  try {
+    const val = localStorage.getItem(STORAGE_KEY);
+    return val !== "off";
+  } catch {
+    return true;
+  }
+}
+
+function saveSoundEnabled(enabled: boolean) {
+  try {
+    localStorage.setItem(STORAGE_KEY, enabled ? "on" : "off");
+  } catch {
+    /* ignore */
+  }
+}
 
 let ctx: AudioContext | null = null;
 
@@ -32,7 +51,14 @@ function playSequence(notes: [number, number, OscillatorType?][], baseDelay = 0)
 }
 
 export function useSound() {
-  const enabledRef = useRef(true);
+  const [enabled, setEnabledState] = useState(loadSoundEnabled);
+  const enabledRef = useRef(enabled);
+  useEffect(() => { enabledRef.current = enabled; }, [enabled]);
+
+  const setEnabled = useCallback((val: boolean) => {
+    setEnabledState(val);
+    saveSoundEnabled(val);
+  }, []);
 
   const click = useCallback(() => {
     if (!enabledRef.current) return;
@@ -74,5 +100,5 @@ export function useSound() {
     ]);
   }, []);
 
-  return { click, correct, wrong, achievement, complete, enabledRef };
+  return { click, correct, wrong, achievement, complete, enabled, setEnabled };
 }

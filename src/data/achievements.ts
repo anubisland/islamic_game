@@ -16,7 +16,7 @@ export const achievements: Achievement[] = [
   {
     id: "faith-journey",
     title: "رحلة الإيمان",
-    description: "أكمل جميع المراحل الخمس",
+    description: "أكمل جميع المراحل",
     icon: "🕌",
   },
   {
@@ -37,12 +37,34 @@ export const achievements: Achievement[] = [
     description: "أجب على جميع الأسئلة بشكل صحيح في مرحلة واحدة",
     icon: "🎯",
   },
+  {
+    id: "faqih",
+    title: "الفقيه",
+    description: "أكمل مرحلة الفقه والعبادات",
+    icon: "📜",
+    stageId: "fiqh",
+  },
+  {
+    id: "dhaakir",
+    title: "الذاكر",
+    description: "أكمل مرحلة الأذكار والأدعية",
+    icon: "🕊️",
+    stageId: "adhkar",
+  },
+  {
+    id: "muhaddith",
+    title: "المحدث",
+    description: "أكمل مرحلة الحديث النبوي",
+    icon: "📗",
+    stageId: "hadith",
+  },
 ];
 
 export function checkAchievements(
   completedStages: number,
   totalStages: number,
   stageStars: Record<string, number>,
+  completedStageIds: string[] = [],
 ): string[] {
   const earned: string[] = [];
   const allStarCounts = Object.values(stageStars);
@@ -54,5 +76,10 @@ export function checkAchievements(
   if (allStarCounts.length === totalStages && allStarCounts.every((s) => s >= 3)) {
     earned.push("perfectionist");
   }
+
+  if (completedStageIds.includes("fiqh")) earned.push("faqih");
+  if (completedStageIds.includes("adhkar")) earned.push("dhaakir");
+  if (completedStageIds.includes("hadith")) earned.push("muhaddith");
+
   return earned;
 }

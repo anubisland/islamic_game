@@ -63,7 +63,9 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: "var(--shadow)",
     border: "1px solid rgba(0,0,0,0.04)",
     position: "relative",
-    width: 140,
+    width: 130,
+    flex: "1 1 100px",
+    maxWidth: 140,
     transition: "opacity 0.3s, filter 0.3s",
   },
 };

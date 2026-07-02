@@ -10,10 +10,13 @@ interface Props {
   progress: GameProgress;
   leaderboard: LeaderboardEntry[];
   onSelectStage: (index: number) => void;
+  onSettings: () => void;
+  onStats: () => void;
+  onQuickQuiz: () => void;
   onReset: () => void;
 }
 
-export function HomePage({ progress, leaderboard, onSelectStage, onReset }: Props) {
+export function HomePage({ progress, leaderboard, onSelectStage, onSettings, onStats, onQuickQuiz, onReset }: Props) {
   const completedCount = Object.values(progress.stages).filter((s) => s.completed).length;
   const pct = stages.length > 0 ? (completedCount / stages.length) * 100 : 0;
   const unlockedIds = progress.achievements ?? [];
@@ -22,22 +25,41 @@ export function HomePage({ progress, leaderboard, onSelectStage, onReset }: Prop
     <div>
       <Header />
 
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "2rem 1rem" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "1.5rem 0.75rem" }}>
         <div
           className="animate-fade-in-up"
           style={{
             textAlign: "center",
-            marginBottom: "2.5rem",
+            marginBottom: "1.5rem",
             background: "linear-gradient(135deg, var(--card-bg), #faf8f4)",
             borderRadius: "var(--radius)",
-            padding: "2rem 1.5rem",
+            padding: "1.5rem 1rem",
             boxShadow: "var(--shadow)",
             border: "1px solid var(--card-border)",
           }}
         >
-          <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--green-primary)" }}>
-            🕌 مرحباً بك في رحلة الإيمان
-          </p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "0.25rem" }}>
+              <button
+                onClick={onStats}
+                style={{ background: "transparent", border: "none", fontSize: "1.15rem", cursor: "pointer", padding: "0.25rem" }}
+                title="الإحصاءات"
+              >
+                📊
+              </button>
+              <button
+                onClick={onSettings}
+                style={{ background: "transparent", border: "none", fontSize: "1.15rem", cursor: "pointer", padding: "0.25rem" }}
+                title="الإعدادات"
+              >
+                ⚙️
+              </button>
+            </div>
+            <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--green-primary)" }}>
+              🕌 مرحباً بك في رحلة الإيمان
+            </p>
+            <div />
+          </div>
           <p
             style={{
               fontSize: "0.9rem",
@@ -81,6 +103,25 @@ export function HomePage({ progress, leaderboard, onSelectStage, onReset }: Prop
                 }}
               />
             </div>
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: "1rem" }}>
+            <button
+              onClick={onQuickQuiz}
+              style={{
+                background: "linear-gradient(135deg, var(--gold), #b8922a)",
+                color: "#fff",
+                padding: "0.7rem 2rem",
+                borderRadius: 10,
+                fontSize: "1rem",
+                fontWeight: 700,
+                boxShadow: "0 3px 12px rgba(212,160,43,0.35)",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              ⚡ اختبار سريع
+            </button>
           </div>
         </div>
 
