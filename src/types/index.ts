@@ -48,6 +48,7 @@ export interface LeaderboardEntry {
 }
 
 export type Difficulty = "practice" | "easy" | "normal" | "hard";
+export type Lang = "ar" | "en";
 
 export interface GameProgress {
   stages: Record<string, StageProgress>;

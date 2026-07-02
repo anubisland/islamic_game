@@ -1,0 +1,211 @@
+import { useState } from "react";
+import { useTranslation } from "../i18n";
+
+interface Props {
+  onSelectGame: (gameId: string) => void;
+  soundEnabled?: boolean;
+  onToggleSound?: () => void;
+}
+
+export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
+  const { t, lang, setLang, dir } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+  const gh = t.gameHub;
+
+  return (
+    <div dir={dir}>
+      <header style={headerStyle}>
+        <div style={headerInner}>
+          <h1 style={logoStyle}>🧩 {gh.title}</h1>
+          <div style={{ display: "flex", gap: "0.35rem" }}>
+            {onToggleSound !== undefined && (
+              <button onClick={onToggleSound} style={iconBtn} title={soundEnabled ? t.header.mute : t.header.unmute}>
+                {soundEnabled ? "🔊" : "🔇"}
+              </button>
+            )}
+            <button
+              onClick={() => setLang(lang === "ar" ? "en" : "ar")}
+              style={langBtn}
+            >
+              {lang === "ar" ? "EN" : "AR"}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div style={{ maxWidth: 700, margin: "0 auto", padding: "1.5rem 0.75rem" }}>
+        <p style={{ textAlign: "center", color: "var(--text-light)", marginBottom: "1.5rem", fontSize: "0.95rem" }}>
+          {gh.subtitle}
+        </p>
+
+        {/* Intro card */}
+        <div
+          className="animate-fade-in-up"
+          style={{
+            background: "linear-gradient(135deg, var(--green-primary), #0f4d2e)",
+            color: "#fff",
+            borderRadius: "var(--radius)",
+            padding: "1.5rem",
+            marginBottom: "1.5rem",
+            boxShadow: "0 6px 24px rgba(27,107,62,0.3)",
+          }}
+        >
+          <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem", textAlign: "center" }}>🕌</div>
+          <h2 style={{ fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.75rem", textAlign: "center" }}>
+            {gh.introCard.title}
+          </h2>
+          <p style={{ lineHeight: 1.8, fontSize: "0.9rem", opacity: 0.9, marginBottom: "1rem" }}>
+            {gh.introCard.desc}
+          </p>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              color: "#fff",
+              border: "1px solid rgba(255,255,255,0.25)",
+              padding: "0.4rem 1rem",
+              borderRadius: 8,
+              fontSize: "0.82rem",
+              fontWeight: 600,
+              width: "100%",
+            }}
+          >
+            {expanded ? "▲" : "▼"} {expanded ? "إخفاء" : lang === "ar" ? "المزيد" : "More"}
+          </button>
+          {expanded && (
+            <div className="animate-slide-down" style={{ marginTop: "1rem" }}>
+              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {gh.introCard.features.map((feat: string, i: number) => (
+                  <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem" }}>
+                    <span style={{ fontSize: "1.1rem" }}>✅</span>
+                    <span>{feat}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* Game cards */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <GameCard
+            icon="🕌"
+            title={lang === "ar" ? "رحلة الإيمان" : "Faith Journey"}
+            subtitle={lang === "ar" ? "لعبة تعليمية إسلامية متعددة المراحل" : "Multi-stage Islamic educational game"}
+            desc={lang === "ar"
+              ? "15 مرحلة تعليمية تغطي أركان الإسلام، السيرة النبوية، القرآن الكريم، الفقه، الأذكار، الحديث، رمضان، الحج، الإسراء والمعراج، الخلفاء الراشدون وغيرها"
+              : "15 educational stages covering Pillars of Islam, Prophetic biography, Quran, jurisprudence, remembrances, hadith, Ramadan, Hajj, Isra wal-Miraj, Rightly Caliphs and more"}
+            stagesCount={15}
+            questionsCount={88}
+            onClick={() => onSelectGame("faith-journey")}
+          />
+
+          {/* Future game placeholder */}
+          <div
+            className="animate-fade-in-up"
+            style={{
+              background: "var(--card-bg)",
+              borderRadius: "var(--radius)",
+              padding: "1.5rem",
+              border: "2px dashed var(--border)",
+              textAlign: "center",
+              opacity: 0.7,
+            }}
+          >
+            <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🧩</div>
+            <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-light)", marginBottom: "0.25rem" }}>
+              {gh.futureGame}
+            </h3>
+            <p style={{ fontSize: "0.85rem", color: "var(--text-light)" }}>
+              {lang === "ar" ? "ألعاب قادمة قريباً..." : "More games coming soon..."}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GameCard({
+  icon, title, subtitle, desc, stagesCount, questionsCount, onClick,
+}: {
+  icon: string; title: string; subtitle: string; desc: string;
+  stagesCount: number; questionsCount: number; onClick: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      className="animate-scale-in"
+      style={{
+        background: "var(--card-bg)",
+        borderRadius: "var(--radius)",
+        padding: "1.25rem",
+        boxShadow: hovered ? "var(--shadow-lg)" : "var(--shadow)",
+        border: "2px solid var(--green-primary)",
+        transition: "all 0.3s",
+        transform: hovered ? "translateY(-4px)" : "none",
+        cursor: "pointer",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.75rem" }}>
+        <span style={{ fontSize: "2.5rem" }}>{icon}</span>
+        <div>
+          <h3 style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--green-primary)" }}>{title}</h3>
+          <p style={{ fontSize: "0.85rem", color: "var(--text-light)" }}>{subtitle}</p>
+        </div>
+      </div>
+      <p style={{ fontSize: "0.85rem", lineHeight: 1.7, color: "var(--text)", marginBottom: "0.75rem" }}>{desc}</p>
+      <div style={{ display: "flex", gap: "1rem", fontSize: "0.82rem", color: "var(--text-light)" }}>
+        <span>📚 {stagesCount} {stagesCount > 1 ? "مراحل" : "مرحلة"}</span>
+        <span>🧠 {questionsCount} {questionsCount > 1 ? "سؤالاً" : "سؤال"}</span>
+      </div>
+    </div>
+  );
+}
+
+const headerStyle: React.CSSProperties = {
+  background: "linear-gradient(135deg, #0f4d2e, var(--green-dark))",
+  color: "#fff",
+  padding: "0.7rem 0.75rem",
+  position: "sticky",
+  top: 0,
+  zIndex: 100,
+  boxShadow: "0 2px 16px rgba(0,0,0,0.15)",
+};
+
+const headerInner: React.CSSProperties = {
+  maxWidth: 700,
+  margin: "0 auto",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+};
+
+const logoStyle: React.CSSProperties = {
+  fontSize: "1.15rem",
+  fontWeight: 800,
+  letterSpacing: "0.5px",
+};
+
+const iconBtn: React.CSSProperties = {
+  background: "rgba(255,255,255,0.12)",
+  color: "#fff",
+  padding: "0.35rem 0.6rem",
+  borderRadius: 8,
+  fontSize: "1rem",
+  border: "1px solid rgba(255,255,255,0.2)",
+};
+
+const langBtn: React.CSSProperties = {
+  background: "rgba(255,255,255,0.15)",
+  color: "#fff",
+  padding: "0.35rem 0.85rem",
+  borderRadius: 8,
+  fontSize: "0.82rem",
+  fontWeight: 700,
+  border: "1px solid rgba(255,255,255,0.25)",
+  letterSpacing: 1,
+};

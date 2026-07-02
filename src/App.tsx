@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { stages } from "./data/stages";
 import { achievements, checkAchievements } from "./data/achievements";
 import { useProgress } from "./hooks/useProgress";
 import { useSound } from "./hooks/useSound";
+import { useTranslation } from "./i18n";
 import { HomePage } from "./pages/HomePage";
 import { StagePage } from "./pages/StagePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { StatsPage } from "./pages/StatsPage";
 import { FlashcardPage } from "./pages/FlashcardPage";
+import { GameHub } from "./pages/GameHub";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
 import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
@@ -15,15 +16,21 @@ import { generateDailyQuiz, getDailyChallengeDate } from "./utils/dailyQuiz";
 import { saveProgress } from "./utils/storage";
 import type { LeaderboardEntry, Stage } from "./types";
 
+type Screen =
+  | { id: "hub" }
+  | { id: "home" }
+  | { id: "stage"; index: number }
+  | { id: "settings" }
+  | { id: "stats" }
+  | { id: "quick-quiz" }
+  | { id: "flashcard"; index: number }
+  | { id: "daily" };
+
 export default function App() {
   const sound = useSound();
   const { progress, updateStage, addAchievement, toggleFlashcardLesson, setDifficulty, reset } = useProgress();
-  const [currentStageIndex, setCurrentStageIndex] = useState<number | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showStats, setShowStats] = useState(false);
-  const [quickQuizStage, setQuickQuizStage] = useState<Stage | null>(null);
-  const [flashcardStage, setFlashcardStage] = useState<Stage | null>(null);
-  const [showDaily, setShowDaily] = useState(false);
+  const { stages, lang } = useTranslation();
+  const [screen, setScreen] = useState<Screen>({ id: "hub" });
   const [dailyDate, setDailyDate] = useState(() => localStorage.getItem("daily-challenge-date") ?? "");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(loadLeaderboard);
 
@@ -35,9 +42,8 @@ export default function App() {
     setDailyDate("");
   }
 
-  if (currentStageIndex !== null) {
-    const stage = stages[currentStageIndex];
-
+  if (screen.id === "stage") {
+    const stage = stages[screen.index];
     return (
       <StagePage
         stage={stage}
@@ -85,20 +91,40 @@ export default function App() {
           });
           if (newUnlock) setTimeout(() => sound.achievement(), 300);
 
-          setCurrentStageIndex(null);
+          setScreen({ id: "home" });
         }}
-        onBack={() => setCurrentStageIndex(null)}
+        onBack={() => setScreen({ id: "home" })}
       />
     );
   }
 
-  if (showSettings) {
+  if (screen.id === "home") {
+    return (
+      <HomePage
+        progress={progress}
+        leaderboard={leaderboard}
+        onSelectStage={(index) => setScreen({ id: "stage", index })}
+        onFlashcards={(index) => setScreen({ id: "flashcard", index })}
+        onSettings={() => setScreen({ id: "settings" })}
+        onStats={() => setScreen({ id: "stats" })}
+        onQuickQuiz={() => setScreen({ id: "quick-quiz" })}
+        onDailyChallenge={() => setScreen({ id: "daily" })}
+        dailyCompleted={dailyDate === getDailyChallengeDate()}
+        onReset={handleReset}
+        soundEnabled={sound.enabled}
+        onToggleSound={() => sound.setEnabled(!sound.enabled)}
+        onBackToHub={() => setScreen({ id: "hub" })}
+      />
+    );
+  }
+
+  if (screen.id === "settings") {
     return (
       <SettingsPage
         soundEnabled={sound.enabled}
         onToggleSound={() => sound.setEnabled(!sound.enabled)}
-      onReset={handleReset}
-        onBack={() => setShowSettings(false)}
+        onReset={handleReset}
+        onBack={() => setScreen({ id: "home" })}
         progress={progress}
         onImportProgress={(data) => {
           saveProgress(data);
@@ -108,49 +134,56 @@ export default function App() {
     );
   }
 
-  if (showStats) {
+  if (screen.id === "stats") {
     return (
       <StatsPage
-        stats={computeStats(progress, achievements.length)}
-        onBack={() => setShowStats(false)}
+        stats={computeStats(progress, achievements.length, stages)}
+        onBack={() => setScreen({ id: "home" })}
         soundEnabled={sound.enabled}
         onToggleSound={() => sound.setEnabled(!sound.enabled)}
       />
     );
   }
 
-  if (quickQuizStage) {
+  if (screen.id === "quick-quiz") {
+    const qqTitle = lang === "ar" ? "اختبار سريع" : "Quick Quiz";
+    const qqSubtitle = lang === "ar" ? "10 أسئلة عشوائية من جميع المراحل" : "10 random questions from all stages";
+    const quizStage = generateQuickQuiz(stages, qqTitle, qqSubtitle);
     return (
       <StagePage
-        stage={quickQuizStage}
-        onComplete={() => setQuickQuizStage(null)}
-        onBack={() => setQuickQuizStage(null)}
+        stage={quizStage}
+        onComplete={() => setScreen({ id: "hub" })}
+        onBack={() => setScreen({ id: "hub" })}
         soundEnabled={sound.enabled}
         onToggleSound={() => sound.setEnabled(!sound.enabled)}
       />
     );
   }
 
-  if (flashcardStage) {
+  if (screen.id === "flashcard") {
+    const stage = stages[screen.index];
     return (
       <FlashcardPage
-        stage={flashcardStage}
-        knownLessons={progress.flashcards?.[flashcardStage.id] ?? []}
-        onToggleLesson={(lessonId) => toggleFlashcardLesson(flashcardStage.id, lessonId)}
-        onBack={() => setFlashcardStage(null)}
+        stage={stage}
+        knownLessons={progress.flashcards?.[stage.id] ?? []}
+        onToggleLesson={(lessonId) => toggleFlashcardLesson(stage.id, lessonId)}
+        onBack={() => setScreen({ id: "home" })}
       />
     );
   }
 
-  if (showDaily) {
+  if (screen.id === "daily") {
     const today = getDailyChallengeDate();
+    const dailyTitle = lang === "ar"
+      ? `التحدي اليومي — ${today}`
+      : `Daily Challenge — ${today}`;
     const dailyStage: Stage = {
       id: "daily",
-      title: `التحدي اليومي — ${today}`,
-      subtitle: "5 أسئلة عشوائية من جميع المراحل",
+      title: dailyTitle,
+      subtitle: lang === "ar" ? "5 أسئلة عشوائية من جميع المراحل" : "5 random questions from all stages",
       icon: "⏱️",
       lessons: [],
-      questions: generateDailyQuiz(),
+      questions: generateDailyQuiz(stages),
     };
     return (
       <StagePage
@@ -158,9 +191,9 @@ export default function App() {
         onComplete={() => {
           localStorage.setItem("daily-challenge-date", today);
           setDailyDate(today);
-          setShowDaily(false);
+          setScreen({ id: "hub" });
         }}
-        onBack={() => setShowDaily(false)}
+        onBack={() => setScreen({ id: "hub" })}
         soundEnabled={sound.enabled}
         onToggleSound={() => sound.setEnabled(!sound.enabled)}
       />
@@ -168,17 +201,10 @@ export default function App() {
   }
 
   return (
-    <HomePage
-      progress={progress}
-      leaderboard={leaderboard}
-      onSelectStage={setCurrentStageIndex}
-      onFlashcards={(index) => setFlashcardStage(stages[index])}
-      onSettings={() => setShowSettings(true)}
-      onStats={() => setShowStats(true)}
-      onQuickQuiz={() => setQuickQuizStage(generateQuickQuiz())}
-      onDailyChallenge={() => setShowDaily(true)}
-      dailyCompleted={dailyDate === getDailyChallengeDate()}
-      onReset={reset}
+    <GameHub
+      onSelectGame={(gameId) => {
+        if (gameId === "faith-journey") setScreen({ id: "home" });
+      }}
       soundEnabled={sound.enabled}
       onToggleSound={() => sound.setEnabled(!sound.enabled)}
     />

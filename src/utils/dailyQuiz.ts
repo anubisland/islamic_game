@@ -1,5 +1,4 @@
-import { stages } from "../data/stages";
-import type { Question } from "../types";
+import type { Stage, Question } from "../types";
 
 function seededRandom(seed: number): number {
   const x = Math.sin(seed) * 10000;
@@ -18,7 +17,7 @@ function shuffleArray<T>(arr: T[], seed: number): T[] {
   return result;
 }
 
-export function generateDailyQuiz(): Question[] {
+export function generateDailyQuiz(stages: Stage[]): Question[] {
   const today = new Date();
   const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
 

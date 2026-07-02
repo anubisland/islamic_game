@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import type { Difficulty, Stage } from "../types";
 import { Header } from "../components/Header";
 import { useSound } from "../hooks/useSound";
+import { useTranslation } from "../i18n";
 import { shuffleQuestions } from "../utils/shuffle";
 
 const DIFFICULTY_CONFIG: Record<Difficulty, { time: number; lives: number }> = {
@@ -54,6 +55,7 @@ function PhaseContainer({ children, delay = 0 }: { children: React.ReactNode; de
 
 export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onComplete, onBack, soundEnabled, onToggleSound }: Props) {
   const sound = useSound();
+  const { t, lang } = useTranslation();
   const config = DIFFICULTY_CONFIG[difficulty];
   const [phase, setPhase] = useState<Phase>("intro");
   const [lessonIndex, setLessonIndex] = useState(0);
@@ -68,6 +70,8 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
   const [shuffledQuestions, setShuffledQuestions] = useState(shuffleQuestions(stage.questions));
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const stars = calcStars(score, shuffledQuestions.length);
+  const st = t.stage;
+  const dc = t.difficulty;
 
   function clearTimer() {
     if (timerRef.current !== null) {
@@ -92,7 +96,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
             ...prev,
             {
               question: q.text,
-              selected: "— (انتهى الوقت)",
+              selected: st.timeExpired,
               correct: q.options[q.correctIndex],
               explanation: q.explanation,
             },
@@ -103,7 +107,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
       });
     }, 1000);
     return clearTimer;
-  }, [phase, questionIndex, showExplanation, config.time, shuffledQuestions]);
+  }, [phase, questionIndex, showExplanation, config.time, shuffledQuestions, st.timeExpired]);
 
   function handleAnswer(index: number) {
     if (showExplanation) return;
@@ -178,6 +182,20 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
     border: "2px solid var(--green-primary)",
   };
 
+  const diffLabels: Record<Difficulty, string> = {
+    practice: dc.practice,
+    easy: dc.easy,
+    normal: dc.normal,
+    hard: dc.hard,
+  };
+
+  const diffColors: Record<Difficulty, string> = {
+    practice: "var(--green-light)",
+    easy: "#27ae60",
+    normal: "var(--gold)",
+    hard: "#e74c3c",
+  };
+
   return (
     <div>
       <Header onHome={onBack} title={stage.title} soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
@@ -214,8 +232,8 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                   color: "var(--text-light)",
                 }}
               >
-                <span>📚 {stage.lessons.length} دروس</span>
-                <span>🧠 {stage.questions.length} أسئلة</span>
+                <span>📚 {stage.lessons.length} {st.lessons}</span>
+                <span>🧠 {stage.questions.length} {st.questions}</span>
               </div>
 
               {onSetDifficulty && (
@@ -229,19 +247,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                   }}
                 >
                   {(["practice", "easy", "normal", "hard"] as Difficulty[]).map((d) => {
-                    const labels: Record<Difficulty, string> = {
-                      practice: "🧘 تدريبي",
-                      easy: "سهل 🟢",
-                      normal: "متوسط 🟡",
-                      hard: "صعب 🔴",
-                    };
                     const isActive = difficulty === d;
-                    const colors: Record<Difficulty, string> = {
-                      practice: "var(--green-light)",
-                      easy: "#27ae60",
-                      normal: "var(--gold)",
-                      hard: "#e74c3c",
-                    };
                     return (
                       <button
                         key={d}
@@ -251,12 +257,12 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                           borderRadius: 8,
                           fontSize: "0.82rem",
                           fontWeight: 700,
-                          background: isActive ? colors[d] : "transparent",
+                          background: isActive ? diffColors[d] : "transparent",
                           color: isActive ? "#fff" : "var(--text-light)",
-                          border: `2px solid ${isActive ? colors[d] : "var(--border)"}`,
+                          border: `2px solid ${isActive ? diffColors[d] : "var(--border)"}`,
                         }}
                       >
-                        {labels[d]}
+                        {diffLabels[d]}
                       </button>
                     );
                   })}
@@ -282,7 +288,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                   e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
-                {stage.lessons.length === 0 ? "ابدأ الاختبار" : "ابدأ التعلم"}
+                {stage.lessons.length === 0 ? st.startQuiz : st.startLearning}
               </button>
             </div>
           </PhaseContainer>
@@ -301,7 +307,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                 }}
               >
                 <span>
-                  درس {lessonIndex + 1} من {stage.lessons.length}
+                  {st.lesson} {lessonIndex + 1} {st.of} {stage.lessons.length}
                 </span>
               </div>
 
@@ -353,7 +359,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                     style={btnSecondary}
                     onClick={() => { sound.click(); setLessonIndex((i) => i - 1); }}
                   >
-                    → السابق
+                    {st.previous}
                   </button>
                 ) : (
                   <div />
@@ -363,7 +369,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                     style={btnPrimary}
                     onClick={() => { sound.click(); setLessonIndex((i) => i + 1); }}
                   >
-                    التالي ←
+                    {st.next}
                   </button>
                 ) : (
                   <button
@@ -374,7 +380,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                     }}
                     onClick={() => { sound.click(); setLives(config.lives); setShuffledQuestions(shuffleQuestions(stage.questions)); setPhase("quiz"); }}
                   >
-                    ابدأ الاختبار
+                    {st.startQuiz}
                   </button>
                 )}
               </div>
@@ -394,7 +400,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                   color: "var(--text-light)",
                 }}
               >
-                <span>سؤال {questionIndex + 1} من {shuffledQuestions.length}</span>
+                <span>{st.questions} {questionIndex + 1} {st.of} {shuffledQuestions.length}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
                   {difficulty !== "practice" && (
                     <span style={{ display: "flex", gap: "0.2rem", fontSize: "1rem" }}>
@@ -406,11 +412,11 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                     </span>
                   )}
                   <span style={{ fontWeight: 700, color: "var(--green-primary)" }}>
-                    {score} ✓
+                    {score} {st.correct}
                   </span>
                   {difficulty === "practice" && (
                     <span style={{ fontSize: "0.78rem", color: "var(--green-light)", fontWeight: 600 }}>
-                      🧘 تدريبي
+                      {st.practice}
                     </span>
                   )}
                 </div>
@@ -499,7 +505,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                         borderRadius: 10,
                         background: bg,
                         border,
-                        textAlign: "right",
+                        textAlign: "right" as const,
                         fontSize: "1rem",
                         cursor: showExplanation ? "default" : "pointer",
                         transition: "all 0.2s",
@@ -537,7 +543,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                 >
                   {timeExpired && (
                     <strong style={{ color: "#e74c3c", display: "block", marginBottom: "0.5rem" }}>
-                      ⏰ انتهى الوقت!
+                      {st.timeUp}
                     </strong>
                   )}
                   💡 {currentQuestion.explanation}
@@ -553,11 +559,9 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                   }}
                   onClick={lives <= 0 ? () => { sound.click(); setPhase("result"); } : nextQuestion}
                 >
-                  {lives <= 0
-                    ? "عرض النتيجة 🎯"
-                    : questionIndex < shuffledQuestions.length - 1
-                      ? "التالي ←"
-                      : "عرض النتيجة 🎯"}
+                  {lives <= 0 || questionIndex >= shuffledQuestions.length - 1
+                    ? st.showResult
+                    : st.next}
                 </button>
               )}
             </div>
@@ -584,17 +588,17 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                 }}
               >
                 {score === shuffledQuestions.length
-                  ? "إتقان تام! أحسنت"
+                  ? st.resultPerfect
                   : score >= shuffledQuestions.length * 0.6
-                    ? "جيد جداً! واصل التقدم"
-                    : "حاول مرة أخرى لتتحسن"}
+                    ? st.resultGood
+                    : st.resultTryAgain}
               </h2>
 
               <p
                 className="animate-fade-in"
                 style={{ fontSize: "1.1rem", color: "var(--text-light)", marginBottom: "1rem" }}
               >
-                حصلت على {score} من {shuffledQuestions.length}
+                {st.score.replace("{score}", String(score)).replace("{total}", String(shuffledQuestions.length))}
               </p>
 
               <div
@@ -640,16 +644,16 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                       e.currentTarget.style.transform = "translateY(0)";
                     }}
                   >
-                    📝 مراجعة الأخطاء ({wrongAnswers.length})
+                    {st.review} ({wrongAnswers.length})
                   </button>
                 )}
                 <button
                   onClick={() => {
-                    const text = `🕌 رحلة الإيمان\n📖 ${stage.title}\n⭐ ${stars === 3 ? "★★★" : stars === 2 ? "★★" : "★"} (${score}/${shuffledQuestions.length})\n🔗 https://anubisland.github.io/islamic_game`;
+                    const text = `🕌 ${t.home.title}\n📖 ${stage.title}\n⭐ ${stars === 3 ? "★★★" : stars === 2 ? "★★" : "★"} (${score}/${shuffledQuestions.length})\n🔗 https://anubisland.github.io/islamic_game`;
                     if (navigator.share) {
-                      navigator.share({ title: "رحلة الإيمان", text });
+                      navigator.share({ title: t.home.title, text });
                     } else {
-                      navigator.clipboard?.writeText(text).then(() => alert("✅ تم نسخ النتيجة! شاركها مع أصدقائك")).catch(() => {});
+                      navigator.clipboard?.writeText(text).then(() => alert("✅ " + (lang === "ar" ? "تم نسخ النتيجة! شاركها مع أصدقائك" : "Result copied! Share it with your friends"))).catch(() => {});
                     }
                   }}
                   style={{
@@ -660,7 +664,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                     minWidth: 220,
                   }}
                 >
-                  📤 مشاركة النتيجة
+                  {st.share}
                 </button>
                 <button
                   style={{
@@ -677,7 +681,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                     e.currentTarget.style.boxShadow = "0 2px 8px rgba(27,107,62,0.3)";
                   }}
                 >
-                  العودة إلى المراحل
+                  {st.backToStages}
                 </button>
               </div>
             </div>
@@ -695,10 +699,10 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                 }}
               >
                 <span style={{ fontSize: "0.85rem", color: "var(--text-light)", fontWeight: 600 }}>
-                  📝 مراجعة الأخطاء
+                  {st.review}
                 </span>
                 <button onClick={() => setPhase("result")} style={btnSecondary}>
-                  العودة ←
+                  {lang === "ar" ? "العودة ←" : "← Back"}
                 </button>
               </div>
 
@@ -726,10 +730,10 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                       {i + 1}. {wa.question}
                     </p>
                     <p style={{ fontSize: "0.85rem", color: "#e74c3c", marginBottom: "0.25rem" }}>
-                      ✗ إجابتك: {wa.selected}
+                      {st.yourAnswer}: {wa.selected}
                     </p>
                     <p style={{ fontSize: "0.85rem", color: "var(--green-light)", marginBottom: "0.5rem" }}>
-                      ✓ الإجابة الصحيحة: {wa.correct}
+                      {st.correctAnswer}: {wa.correct}
                     </p>
                     <p style={{ fontSize: "0.82rem", color: "var(--text-light)" }}>
                       💡 {wa.explanation}

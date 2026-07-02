@@ -1,11 +1,11 @@
 import { useState } from "react";
 import type { GameProgress, LeaderboardEntry } from "../types";
-import { stages } from "../data/stages";
 import { achievements } from "../data/achievements";
 import { StageCard } from "../components/StageCard";
 import { AchievementBadge } from "../components/AchievementBadge";
 import { Leaderboard } from "../components/Leaderboard";
 import { Header } from "../components/Header";
+import { useTranslation } from "../i18n";
 
 interface Props {
   progress: GameProgress;
@@ -20,13 +20,16 @@ interface Props {
   onReset: () => void;
   soundEnabled?: boolean;
   onToggleSound?: () => void;
+  onBackToHub?: () => void;
 }
 
-export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, onSettings, onStats, onQuickQuiz, onDailyChallenge, dailyCompleted, onReset, soundEnabled, onToggleSound }: Props) {
+export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, onSettings, onStats, onQuickQuiz, onDailyChallenge, dailyCompleted, onReset, soundEnabled, onToggleSound, onBackToHub }: Props) {
+  const { t, stages } = useTranslation();
   const completedCount = Object.values(progress.stages).filter((s) => s.completed).length;
   const pct = stages.length > 0 ? (completedCount / stages.length) * 100 : 0;
   const unlockedIds = progress.achievements ?? [];
   const [searchQuery, setSearchQuery] = useState("");
+  const h = t.home;
 
   const filteredStages = searchQuery.trim()
     ? stages.filter((s) => s.title.includes(searchQuery) || s.subtitle.includes(searchQuery))
@@ -34,7 +37,11 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
 
   return (
     <div>
-      <Header soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
+      <Header
+        soundEnabled={soundEnabled}
+        onToggleSound={onToggleSound}
+        onHub={onBackToHub}
+      />
 
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "1.5rem 0.75rem" }}>
         <div
@@ -54,20 +61,20 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
               <button
                 onClick={onStats}
                 style={{ background: "transparent", border: "none", fontSize: "1.15rem", cursor: "pointer", padding: "0.25rem" }}
-                title="الإحصاءات"
+                title={h.stats}
               >
                 📊
               </button>
               <button
                 onClick={onSettings}
                 style={{ background: "transparent", border: "none", fontSize: "1.15rem", cursor: "pointer", padding: "0.25rem" }}
-                title="الإعدادات"
+                title={h.settings}
               >
                 ⚙️
               </button>
             </div>
             <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--green-primary)" }}>
-              🕌 مرحباً بك في رحلة الإيمان
+              🕌 {h.title}
             </p>
             <div />
           </div>
@@ -79,7 +86,7 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
               marginBottom: "1rem",
             }}
           >
-            اختر مرحلة وابدأ التعلم
+            {h.subtitle}
           </p>
 
           <div
@@ -133,7 +140,7 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
                 onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
               >
-                {dailyCompleted ? "✅ اكتمل التحدي اليومي" : "⏱️ التحدي اليومي"}
+                {dailyCompleted ? h.dailyDone : h.dailyChallenge}
               </button>
             )}
             <button
@@ -150,7 +157,7 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
               onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
             >
-              ⚡ اختبار سريع
+              {h.quickQuiz}
             </button>
           </div>
         </div>
@@ -158,7 +165,7 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
         <div style={{ marginBottom: "1rem" }}>
           <input
             type="text"
-            placeholder="🔍 ابحث عن مرحلة..."
+            placeholder={h.search}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -205,7 +212,7 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
                 {!locked && (
                   <button
                     onClick={() => onFlashcards(i)}
-                    title="بطاقات تعليمية"
+                    title={h.flashcards}
                     style={{
                       display: "block",
                       margin: "0.35rem auto 0",
@@ -226,7 +233,7 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
                       e.currentTarget.style.color = "var(--text-light)";
                     }}
                   >
-                    📇 بطاقات تعليمية
+                    {h.flashcards}
                   </button>
                 )}
               </div>
@@ -234,7 +241,7 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
           })}
           {filteredStages.length === 0 && (
             <p style={{ textAlign: "center", color: "var(--text-light)", padding: "2rem", width: "100%" }}>
-              😕 لا توجد نتائج لـ "{searchQuery}"
+              {h.noResults.replace("{query}", searchQuery)}
             </p>
           )}
         </div>
@@ -253,7 +260,7 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
                 marginBottom: "1rem",
               }}
             >
-              🏅 الشارات
+              🏅 {h.achievements}
             </h3>
             <div
               style={{
@@ -305,7 +312,7 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
                 e.currentTarget.style.color = "var(--text-light)";
               }}
             >
-              ← إعادة تعيين التقدم
+              {h.reset}
             </button>
           </div>
         )}

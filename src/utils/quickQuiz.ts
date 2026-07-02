@@ -1,5 +1,4 @@
 import type { Stage, Question } from "../types";
-import { stages } from "../data/stages";
 import { shuffleQuestions } from "./shuffle";
 
 const QUIZ_SIZE = 10;
@@ -13,7 +12,11 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function generateQuickQuiz(): Stage {
+export function generateQuickQuiz(
+  stages: Stage[],
+  title = "اختبار سريع",
+  subtitle = "10 أسئلة عشوائية من جميع المراحل",
+): Stage {
   const allQuestions: Question[] = [];
   for (const stage of stages) {
     for (const q of stage.questions) {
@@ -26,8 +29,8 @@ export function generateQuickQuiz(): Stage {
 
   return {
     id: "quick-quiz",
-    title: "اختبار سريع",
-    subtitle: "10 أسئلة عشوائية من جميع المراحل",
+    title,
+    subtitle,
     icon: "⚡",
     lessons: [],
     questions: shuffled,

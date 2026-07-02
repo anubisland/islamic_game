@@ -1,5 +1,4 @@
-import type { GameProgress } from "../types";
-import { stages } from "../data/stages";
+import type { GameProgress, Stage } from "../types";
 
 export interface GameStats {
   totalQuestionsAnswered: number;
@@ -25,6 +24,7 @@ export interface GameStats {
 export function computeStats(
   progress: GameProgress,
   totalAchievements: number,
+  stages: Stage[],
 ): GameStats {
   let totalQuestionsAnswered = 0;
   let totalCorrect = 0;

@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import type { GameProgress } from "../types";
 import { Header } from "../components/Header";
+import { useTranslation } from "../i18n";
 
 interface Props {
   soundEnabled: boolean;
@@ -12,10 +13,12 @@ interface Props {
 }
 
 export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack, progress, onImportProgress }: Props) {
+  const { t } = useTranslation();
   const fileRef = useRef<HTMLInputElement>(null);
+  const s = t.settings;
 
   function handleReset() {
-    if (window.confirm("هل أنت متأكد؟ سيتم حذف جميع مراحل التقدم والشارات والنتائج.")) {
+    if (window.confirm(t.home.resetConfirm)) {
       onReset();
       onBack();
     }
@@ -41,9 +44,9 @@ export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack, pro
         const data = JSON.parse(reader.result as string) as GameProgress;
         if (!data.stages || typeof data.stages !== "object") throw Error();
         onImportProgress(data);
-        alert("✅ تم استيراد التقدم بنجاح!");
+        alert(s.importSuccess);
       } catch {
-        alert("❌ الملف غير صالح. تأكد من اختيار ملف JSON صحيح.");
+        alert(s.importError);
       }
     };
     reader.readAsText(file);
@@ -52,7 +55,7 @@ export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack, pro
 
   return (
     <div>
-      <Header onHome={onBack} title="الإعدادات" soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
+      <Header onHome={onBack} title={s.title} soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
 
       <div style={{ maxWidth: 500, margin: "0 auto", padding: "1rem 0.6rem" }}>
         <div
@@ -73,15 +76,15 @@ export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack, pro
               marginBottom: "1.5rem",
             }}
           >
-            ⚙️ الإعدادات
+            ⚙️ {s.title}
           </h2>
 
           <div style={sectionStyle}>
             <div style={rowStyle}>
               <div>
-                <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>🔊 المؤثرات الصوتية</div>
+                <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{s.sound}</div>
                 <div style={{ fontSize: "0.78rem", color: "var(--text-light)" }}>
-                  تشغيل أو إيقاف أصوات اللعبة
+                  {s.soundDesc}
                 </div>
               </div>
               <button
@@ -109,9 +112,9 @@ export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack, pro
           <div style={{ ...sectionStyle, borderTop: "none" }}>
             <div style={rowStyle}>
               <div>
-                <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>🗑️ إعادة تعيين الكل</div>
+                <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{s.reset}</div>
                 <div style={{ fontSize: "0.78rem", color: "var(--text-light)" }}>
-                  حذف كل التقدم والشارات والنتائج
+                  {s.resetDesc}
                 </div>
               </div>
               <button
@@ -126,7 +129,7 @@ export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack, pro
                   whiteSpace: "nowrap",
                 }}
               >
-                إعادة تعيين
+                {s.resetBtn}
               </button>
             </div>
           </div>
@@ -136,13 +139,13 @@ export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack, pro
               <div style={{ ...sectionStyle, borderTop: "none" }}>
                 <div style={rowStyle}>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>💾 تصدير التقدم</div>
+                    <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{s.export}</div>
                     <div style={{ fontSize: "0.78rem", color: "var(--text-light)" }}>
-                      حفظ التقدم كملف احتياطي
+                      {s.exportDesc}
                     </div>
                   </div>
                   <button onClick={handleExport} style={actionBtn}>
-                    تصدير
+                    {s.exportBtn}
                   </button>
                 </div>
               </div>
@@ -150,13 +153,13 @@ export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack, pro
               <div style={{ ...sectionStyle, borderTop: "none" }}>
                 <div style={rowStyle}>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>📂 استيراد التقدم</div>
+                    <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{s.import}</div>
                     <div style={{ fontSize: "0.78rem", color: "var(--text-light)" }}>
-                      استعادة التقدم من ملف احتياطي
+                      {s.importDesc}
                     </div>
                   </div>
                   <button onClick={() => fileRef.current?.click()} style={actionBtn}>
-                    استيراد
+                    {s.importBtn}
                   </button>
                   <input
                     ref={fileRef}
@@ -183,11 +186,11 @@ export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack, pro
             }}
           >
             <div style={{ fontSize: "1.2rem", marginBottom: "0.25rem" }}>🕌</div>
-            <strong style={{ color: "var(--green-primary)" }}>رحلة الإيمان</strong>
+            <strong style={{ color: "var(--green-primary)" }}>{t.home.title}</strong>
             <br />
-            الإصدار 0.2.0
+            {s.version} 0.3.0
             <br />
-            لعبة إسلامية تعليمية — جميع المحتويات من مصادر موثوقة
+            {s.info}
           </div>
         </div>
       </div>
