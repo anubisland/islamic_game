@@ -11,6 +11,7 @@ import { FlashcardPage } from "./pages/FlashcardPage";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
 import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
+import { saveProgress } from "./utils/storage";
 import type { LeaderboardEntry, Stage } from "./types";
 
 export default function App() {
@@ -83,6 +84,11 @@ export default function App() {
         onToggleSound={() => sound.setEnabled(!sound.enabled)}
         onReset={reset}
         onBack={() => setShowSettings(false)}
+        progress={progress}
+        onImportProgress={(data) => {
+          saveProgress(data);
+          window.location.reload();
+        }}
       />
     );
   }

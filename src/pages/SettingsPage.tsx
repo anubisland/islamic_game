@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import type { GameProgress } from "../types";
 import { Header } from "../components/Header";
 
 interface Props {
@@ -5,14 +7,47 @@ interface Props {
   onToggleSound: () => void;
   onReset: () => void;
   onBack: () => void;
+  progress?: GameProgress;
+  onImportProgress?: (data: GameProgress) => void;
 }
 
-export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack }: Props) {
+export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack, progress, onImportProgress }: Props) {
+  const fileRef = useRef<HTMLInputElement>(null);
+
   function handleReset() {
     if (window.confirm("هل أنت متأكد؟ سيتم حذف جميع مراحل التقدم والشارات والنتائج.")) {
       onReset();
       onBack();
     }
+  }
+
+  function handleExport() {
+    if (!progress) return;
+    const blob = new Blob([JSON.stringify(progress, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `islamic-quest-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !onImportProgress) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result as string) as GameProgress;
+        if (!data.stages || typeof data.stages !== "object") throw Error();
+        onImportProgress(data);
+        alert("✅ تم استيراد التقدم بنجاح!");
+      } catch {
+        alert("❌ الملف غير صالح. تأكد من اختيار ملف JSON صحيح.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
   }
 
   return (
@@ -96,6 +131,45 @@ export function SettingsPage({ soundEnabled, onToggleSound, onReset, onBack }: P
             </div>
           </div>
 
+          {progress && (
+            <>
+              <div style={{ ...sectionStyle, borderTop: "none" }}>
+                <div style={rowStyle}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>💾 تصدير التقدم</div>
+                    <div style={{ fontSize: "0.78rem", color: "var(--text-light)" }}>
+                      حفظ التقدم كملف احتياطي
+                    </div>
+                  </div>
+                  <button onClick={handleExport} style={actionBtn}>
+                    تصدير
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ ...sectionStyle, borderTop: "none" }}>
+                <div style={rowStyle}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>📂 استيراد التقدم</div>
+                    <div style={{ fontSize: "0.78rem", color: "var(--text-light)" }}>
+                      استعادة التقدم من ملف احتياطي
+                    </div>
+                  </div>
+                  <button onClick={() => fileRef.current?.click()} style={actionBtn}>
+                    استيراد
+                  </button>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept=".json"
+                    style={{ display: "none" }}
+                    onChange={handleImport}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           <div
             style={{
               marginTop: "2rem",
@@ -131,6 +205,16 @@ const rowStyle: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "space-between",
   gap: "1rem",
+};
+
+const actionBtn: React.CSSProperties = {
+  padding: "0.4rem 1rem",
+  borderRadius: 8,
+  background: "var(--green-light)",
+  color: "#fff",
+  fontSize: "0.82rem",
+  fontWeight: 600,
+  whiteSpace: "nowrap",
 };
 
 const toggleBtn: React.CSSProperties = {
