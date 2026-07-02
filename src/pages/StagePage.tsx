@@ -635,6 +635,25 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                   </button>
                 )}
                 <button
+                  onClick={() => {
+                    const text = `🕌 رحلة الإيمان\n📖 ${stage.title}\n⭐ ${stars === 3 ? "★★★" : stars === 2 ? "★★" : "★"} (${score}/${shuffledQuestions.length})\n🔗 https://anubisland.github.io/islamic_game`;
+                    if (navigator.share) {
+                      navigator.share({ title: "رحلة الإيمان", text });
+                    } else {
+                      navigator.clipboard?.writeText(text).then(() => alert("✅ تم نسخ النتيجة! شاركها مع أصدقائك")).catch(() => {});
+                    }
+                  }}
+                  style={{
+                    ...btnSecondary,
+                    background: "transparent",
+                    border: "2px solid var(--green-light)",
+                    color: "var(--green-light)",
+                    minWidth: 220,
+                  }}
+                >
+                  📤 مشاركة النتيجة
+                </button>
+                <button
                   style={{
                     ...btnPrimary,
                     minWidth: 220,
