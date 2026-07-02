@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { GameProgress, LeaderboardEntry } from "../types";
 import { stages } from "../data/stages";
 import { achievements } from "../data/achievements";
@@ -25,6 +26,11 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
   const completedCount = Object.values(progress.stages).filter((s) => s.completed).length;
   const pct = stages.length > 0 ? (completedCount / stages.length) * 100 : 0;
   const unlockedIds = progress.achievements ?? [];
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredStages = searchQuery.trim()
+    ? stages.filter((s) => s.title.includes(searchQuery) || s.subtitle.includes(searchQuery))
+    : stages;
 
   return (
     <div>
@@ -149,6 +155,28 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
           </div>
         </div>
 
+        <div style={{ marginBottom: "1rem" }}>
+          <input
+            type="text"
+            placeholder="🔍 ابحث عن مرحلة..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "0.65rem 1rem",
+              borderRadius: 10,
+              border: "2px solid var(--border)",
+              background: "var(--card-bg)",
+              color: "var(--text)",
+              fontSize: "0.95rem",
+              outline: "none",
+              fontFamily: "inherit",
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--green-light)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
+          />
+        </div>
+
         <div
           style={{
             display: "flex",
@@ -157,7 +185,7 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
             justifyContent: "center",
           }}
         >
-          {stages.map((stage, i) => {
+          {filteredStages.map((stage, i) => {
             const locked = false;
             return (
               <div
@@ -204,6 +232,11 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
               </div>
             );
           })}
+          {filteredStages.length === 0 && (
+            <p style={{ textAlign: "center", color: "var(--text-light)", padding: "2rem", width: "100%" }}>
+              😕 لا توجد نتائج لـ "{searchQuery}"
+            </p>
+          )}
         </div>
 
         {unlockedIds.length > 0 && (
