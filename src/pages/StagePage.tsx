@@ -103,7 +103,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
       });
     }, 1000);
     return clearTimer;
-  }, [phase, questionIndex, showExplanation]);
+  }, [phase, questionIndex, showExplanation, config.time, shuffledQuestions]);
 
   function handleAnswer(index: number) {
     if (showExplanation) return;
