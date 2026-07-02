@@ -37,7 +37,7 @@ export function computeStats(
     const sp = progress.stages[s.id];
     const completed = sp?.completed ?? false;
     const stars = sp?.stars ?? 0;
-    const percent = sp ? Math.round((sp.score / sp.totalQuestions) * 100) : 0;
+    const percent = sp && sp.totalQuestions > 0 ? Math.round((sp.score / sp.totalQuestions) * 100) : 0;
 
     if (completed) {
       stagesCompleted++;

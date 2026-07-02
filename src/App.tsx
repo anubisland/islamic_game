@@ -27,6 +27,14 @@ export default function App() {
   const [dailyDate, setDailyDate] = useState(() => localStorage.getItem("daily-challenge-date") ?? "");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(loadLeaderboard);
 
+  function handleReset() {
+    reset();
+    setLeaderboard([]);
+    localStorage.removeItem("islamic-quest-leaderboard");
+    localStorage.removeItem("daily-challenge-date");
+    setDailyDate("");
+  }
+
   if (currentStageIndex !== null) {
     const stage = stages[currentStageIndex];
 
@@ -85,7 +93,7 @@ export default function App() {
       <SettingsPage
         soundEnabled={sound.enabled}
         onToggleSound={() => sound.setEnabled(!sound.enabled)}
-        onReset={reset}
+      onReset={handleReset}
         onBack={() => setShowSettings(false)}
         progress={progress}
         onImportProgress={(data) => {
