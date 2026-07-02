@@ -155,6 +155,10 @@ a {
   animation: slideDown 0.3s ease forwards;
 }
 
+.card-flipped {
+  transform: rotateX(180deg);
+}
+
 @media (max-width: 600px) {
   :root {
     --radius: 10px;

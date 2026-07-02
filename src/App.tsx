@@ -7,6 +7,7 @@ import { HomePage } from "./pages/HomePage";
 import { StagePage } from "./pages/StagePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { StatsPage } from "./pages/StatsPage";
+import { FlashcardPage } from "./pages/FlashcardPage";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
 import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
@@ -14,22 +15,22 @@ import type { LeaderboardEntry, Stage } from "./types";
 
 export default function App() {
   const sound = useSound();
-  const { progress, updateStage, addAchievement, reset } = useProgress();
+  const { progress, updateStage, addAchievement, toggleFlashcardLesson, setDifficulty, reset } = useProgress();
   const [currentStageIndex, setCurrentStageIndex] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [quickQuizStage, setQuickQuizStage] = useState<Stage | null>(null);
+  const [flashcardStage, setFlashcardStage] = useState<Stage | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(loadLeaderboard);
 
   if (currentStageIndex !== null) {
     const stage = stages[currentStageIndex];
-    const prevStage = currentStageIndex > 0 ? stages[currentStageIndex - 1] : null;
-    const prevProgress = prevStage ? progress.stages[prevStage.id] : undefined;
 
     return (
       <StagePage
         stage={stage}
-        prevProgress={prevProgress}
+        difficulty={progress.difficulty ?? "normal"}
+        onSetDifficulty={setDifficulty}
         onComplete={(score, total) => {
           const stars = score >= total * 0.9 ? 3 : score >= total * 0.6 ? 2 : score > 0 ? 1 : 0;
           updateStage(stage.id, { completed: true, score, totalQuestions: total, stars });
@@ -103,11 +104,23 @@ export default function App() {
     );
   }
 
+  if (flashcardStage) {
+    return (
+      <FlashcardPage
+        stage={flashcardStage}
+        knownLessons={progress.flashcards?.[flashcardStage.id] ?? []}
+        onToggleLesson={(lessonId) => toggleFlashcardLesson(flashcardStage.id, lessonId)}
+        onBack={() => setFlashcardStage(null)}
+      />
+    );
+  }
+
   return (
     <HomePage
       progress={progress}
       leaderboard={leaderboard}
       onSelectStage={setCurrentStageIndex}
+      onFlashcards={(index) => setFlashcardStage(stages[index])}
       onSettings={() => setShowSettings(true)}
       onStats={() => setShowStats(true)}
       onQuickQuiz={() => setQuickQuizStage(generateQuickQuiz())}

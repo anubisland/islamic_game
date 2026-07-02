@@ -1,17 +1,28 @@
 import { useState, useEffect, useRef } from "react";
-import type { Stage, StageProgress } from "../types";
+import type { Difficulty, Stage } from "../types";
 import { Header } from "../components/Header";
 import { useSound } from "../hooks/useSound";
 import { shuffleQuestions } from "../utils/shuffle";
 
-const TIME_PER_QUESTION = 15;
-const MAX_LIVES = 3;
+const DIFFICULTY_CONFIG: Record<Difficulty, { time: number; lives: number }> = {
+  easy: { time: 20, lives: 5 },
+  normal: { time: 15, lives: 3 },
+  hard: { time: 10, lives: 2 },
+};
 
-type Phase = "intro" | "lessons" | "quiz" | "result";
+type Phase = "intro" | "lessons" | "quiz" | "result" | "review";
+
+interface WrongAnswer {
+  question: string;
+  selected: string;
+  correct: string;
+  explanation: string;
+}
 
 interface Props {
   stage: Stage;
-  prevProgress?: StageProgress;
+  difficulty?: Difficulty;
+  onSetDifficulty?: (d: Difficulty) => void;
   onComplete: (score: number, total: number) => void;
   onBack: () => void;
 }
@@ -38,17 +49,19 @@ function PhaseContainer({ children, delay = 0 }: { children: React.ReactNode; de
   );
 }
 
-export function StagePage({ stage, onComplete, onBack }: Props) {
+export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onComplete, onBack }: Props) {
   const sound = useSound();
+  const config = DIFFICULTY_CONFIG[difficulty];
   const [phase, setPhase] = useState<Phase>("intro");
   const [lessonIndex, setLessonIndex] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION);
+  const [timeLeft, setTimeLeft] = useState(config.time);
   const [timeExpired, setTimeExpired] = useState(false);
-  const [lives, setLives] = useState(MAX_LIVES);
+  const [lives, setLives] = useState(config.lives);
+  const [wrongAnswers, setWrongAnswers] = useState<WrongAnswer[]>([]);
   const [shuffledQuestions, setShuffledQuestions] = useState(shuffleQuestions(stage.questions));
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const stars = calcStars(score, shuffledQuestions.length);
@@ -71,6 +84,16 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
           clearTimer();
           setTimeExpired(true);
           setShowExplanation(true);
+          const q = shuffledQuestions[questionIndex];
+          setWrongAnswers((prev) => [
+            ...prev,
+            {
+              question: q.text,
+              selected: "— (انتهى الوقت)",
+              correct: q.options[q.correctIndex],
+              explanation: q.explanation,
+            },
+          ]);
           return 0;
         }
         return t - 1;
@@ -84,11 +107,21 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
     clearTimer();
     setSelectedAnswer(index);
     setShowExplanation(true);
-    if (index === shuffledQuestions[questionIndex].correctIndex) {
+    const q = shuffledQuestions[questionIndex];
+    if (index === q.correctIndex) {
       setScore((s) => s + 1);
       sound.correct();
     } else {
       sound.wrong();
+      setWrongAnswers((prev) => [
+        ...prev,
+        {
+          question: q.text,
+          selected: q.options[index],
+          correct: q.options[q.correctIndex],
+          explanation: q.explanation,
+        },
+      ]);
       const nextLives = lives - 1;
       setLives(nextLives);
       if (nextLives <= 0) {
@@ -103,7 +136,7 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
     sound.click();
     setSelectedAnswer(null);
     setShowExplanation(false);
-    setTimeLeft(TIME_PER_QUESTION);
+    setTimeLeft(config.time);
     setTimeExpired(false);
     if (lives <= 0) return;
     if (questionIndex < shuffledQuestions.length - 1) {
@@ -179,6 +212,49 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                 <span>📚 {stage.lessons.length} دروس</span>
                 <span>🧠 {stage.questions.length} أسئلة</span>
               </div>
+
+              {onSetDifficulty && (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "0.5rem",
+                    justifyContent: "center",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  {(["easy", "normal", "hard"] as Difficulty[]).map((d) => {
+                    const labels: Record<Difficulty, string> = {
+                      easy: "سهل 🟢",
+                      normal: "متوسط 🟡",
+                      hard: "صعب 🔴",
+                    };
+                    const isActive = difficulty === d;
+                    const colors: Record<Difficulty, string> = {
+                      easy: "#27ae60",
+                      normal: "var(--gold)",
+                      hard: "#e74c3c",
+                    };
+                    return (
+                      <button
+                        key={d}
+                        onClick={() => onSetDifficulty(d)}
+                        style={{
+                          padding: "0.35rem 0.85rem",
+                          borderRadius: 8,
+                          fontSize: "0.82rem",
+                          fontWeight: 700,
+                          background: isActive ? colors[d] : "transparent",
+                          color: isActive ? "#fff" : "var(--text-light)",
+                          border: `2px solid ${isActive ? colors[d] : "var(--border)"}`,
+                        }}
+                      >
+                        {labels[d]}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               <button
                 style={btnPrimary}
                 onClick={() => { sound.click(); setPhase("lessons"); }}
@@ -279,7 +355,7 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                       background: "linear-gradient(135deg, var(--gold), #b8922a)",
                       boxShadow: "0 2px 8px rgba(212,160,43,0.3)",
                     }}
-                    onClick={() => { sound.click(); setLives(MAX_LIVES); setShuffledQuestions(shuffleQuestions(stage.questions)); setPhase("quiz"); }}
+                    onClick={() => { sound.click(); setLives(config.lives); setShuffledQuestions(shuffleQuestions(stage.questions)); setPhase("quiz"); }}
                   >
                     ابدأ الاختبار
                   </button>
@@ -304,7 +380,7 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                 <span>سؤال {questionIndex + 1} من {shuffledQuestions.length}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
                   <span style={{ display: "flex", gap: "0.2rem", fontSize: "1rem" }}>
-                    {Array.from({ length: MAX_LIVES }, (_, i) => (
+                    {Array.from({ length: config.lives }, (_, i) => (
                       <span key={i} style={{ opacity: i < lives ? 1 : 0.2 }}>
                         ❤️
                       </span>
@@ -349,7 +425,7 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                 <div
                   style={{
                     height: "100%",
-                    width: `${(timeLeft / TIME_PER_QUESTION) * 100}%`,
+                    width: `${(timeLeft / config.time) * 100}%`,
                     background:
                       timeLeft > 10
                         ? "var(--green-light)"
@@ -519,23 +595,102 @@ export function StagePage({ stage, onComplete, onBack }: Props) {
                 ))}
               </div>
 
-              <button
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center" }}>
+                {wrongAnswers.length > 0 && (
+                  <button
+                    style={{
+                      ...btnSecondary,
+                      background: "#fff3cd",
+                      border: "2px solid var(--gold)",
+                      color: "#856404",
+                      minWidth: 220,
+                    }}
+                    onClick={() => setPhase("review")}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }}
+                  >
+                    📝 مراجعة الأخطاء ({wrongAnswers.length})
+                  </button>
+                )}
+                <button
+                  style={{
+                    ...btnPrimary,
+                    minWidth: 220,
+                  }}
+                  onClick={handleBackToStages}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 4px 16px rgba(27,107,62,0.4)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(27,107,62,0.3)";
+                  }}
+                >
+                  العودة إلى المراحل
+                </button>
+              </div>
+            </div>
+          </PhaseContainer>
+        )}
+
+        {phase === "review" && (
+          <PhaseContainer>
+            <div style={cardStyle}>
+              <div
                 style={{
-                  ...btnPrimary,
-                  minWidth: 220,
-                }}
-                onClick={handleBackToStages}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(27,107,62,0.4)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(27,107,62,0.3)";
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "1rem",
                 }}
               >
-                العودة إلى المراحل
-              </button>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-light)", fontWeight: 600 }}>
+                  📝 مراجعة الأخطاء
+                </span>
+                <button onClick={() => setPhase("result")} style={btnSecondary}>
+                  العودة ←
+                </button>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                }}
+              >
+                {wrongAnswers.map((wa, i) => (
+                  <div
+                    key={i}
+                    className="animate-fade-in-up"
+                    style={{
+                      padding: "1rem",
+                      borderRadius: 10,
+                      background: "#fdecea",
+                      borderRight: "4px solid #e74c3c",
+                      animationDelay: `${i * 0.1}s`,
+                      animationFillMode: "both",
+                    }}
+                  >
+                    <p style={{ fontWeight: 700, marginBottom: "0.5rem", fontSize: "0.95rem" }}>
+                      {i + 1}. {wa.question}
+                    </p>
+                    <p style={{ fontSize: "0.85rem", color: "#e74c3c", marginBottom: "0.25rem" }}>
+                      ✗ إجابتك: {wa.selected}
+                    </p>
+                    <p style={{ fontSize: "0.85rem", color: "var(--green-light)", marginBottom: "0.5rem" }}>
+                      ✓ الإجابة الصحيحة: {wa.correct}
+                    </p>
+                    <p style={{ fontSize: "0.82rem", color: "var(--text-light)" }}>
+                      💡 {wa.explanation}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </PhaseContainer>
         )}

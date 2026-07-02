@@ -47,7 +47,11 @@ export interface LeaderboardEntry {
   date: string;
 }
 
+export type Difficulty = "easy" | "normal" | "hard";
+
 export interface GameProgress {
   stages: Record<string, StageProgress>;
   achievements: string[];
+  flashcards?: Record<string, string[]>;
+  difficulty?: Difficulty;
 }

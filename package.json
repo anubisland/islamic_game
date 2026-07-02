@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
-    "deploy": "npm run build && gh-pages -d dist -b gh-pages"
+    "deploy": "npm run build && gh-pages -d dist -b gh-pages --dotfiles"
   },
   "dependencies": {
     "react": "^19.2.7",

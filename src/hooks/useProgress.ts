@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { GameProgress } from "../types";
+import type { Difficulty, GameProgress } from "../types";
 import {
   loadProgress,
   saveProgress,
@@ -29,11 +29,32 @@ export function useProgress() {
     [progress, save],
   );
 
+  const toggleFlashcardLesson = useCallback(
+    (stageId: string, lessonId: string) => {
+      const current = progress.flashcards?.[stageId] ?? [];
+      const next = current.includes(lessonId)
+        ? current.filter((id) => id !== lessonId)
+        : [...current, lessonId];
+      save({
+        ...progress,
+        flashcards: { ...progress.flashcards, [stageId]: next },
+      });
+    },
+    [progress, save],
+  );
+
+  const setDifficulty = useCallback(
+    (d: Difficulty) => {
+      save({ ...progress, difficulty: d });
+    },
+    [progress, save],
+  );
+
   const reset = useCallback(() => {
     const empty: GameProgress = { stages: {}, achievements: [] };
     setProgress(empty);
     saveProgress(empty);
   }, []);
 
-  return { progress, updateStage, addAchievement, reset };
+  return { progress, updateStage, addAchievement, toggleFlashcardLesson, setDifficulty, reset };
 }

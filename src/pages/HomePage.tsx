@@ -10,13 +10,14 @@ interface Props {
   progress: GameProgress;
   leaderboard: LeaderboardEntry[];
   onSelectStage: (index: number) => void;
+  onFlashcards: (index: number) => void;
   onSettings: () => void;
   onStats: () => void;
   onQuickQuiz: () => void;
   onReset: () => void;
 }
 
-export function HomePage({ progress, leaderboard, onSelectStage, onSettings, onStats, onQuickQuiz, onReset }: Props) {
+export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, onSettings, onStats, onQuickQuiz, onReset }: Props) {
   const completedCount = Object.values(progress.stages).filter((s) => s.completed).length;
   const pct = stages.length > 0 ? (completedCount / stages.length) * 100 : 0;
   const unlockedIds = progress.achievements ?? [];
@@ -134,8 +135,7 @@ export function HomePage({ progress, leaderboard, onSelectStage, onSettings, onS
           }}
         >
           {stages.map((stage, i) => {
-            const prev = i === 0 ? undefined : progress.stages[stages[i - 1].id];
-            const locked = i > 0 && !prev?.completed;
+            const locked = false;
             return (
               <div
                 key={stage.id}
@@ -151,6 +151,33 @@ export function HomePage({ progress, leaderboard, onSelectStage, onSettings, onS
                   locked={locked}
                   onClick={() => onSelectStage(i)}
                 />
+                {!locked && (
+                  <button
+                    onClick={() => onFlashcards(i)}
+                    title="بطاقات تعليمية"
+                    style={{
+                      display: "block",
+                      margin: "0.35rem auto 0",
+                      background: "transparent",
+                      border: "1px solid var(--border)",
+                      borderRadius: 8,
+                      padding: "0.25rem 0.75rem",
+                      fontSize: "0.8rem",
+                      color: "var(--text-light)",
+                      fontWeight: 600,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "var(--green-light)";
+                      e.currentTarget.style.color = "var(--green-light)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "var(--border)";
+                      e.currentTarget.style.color = "var(--text-light)";
+                    }}
+                  >
+                    📇 بطاقات تعليمية
+                  </button>
+                )}
               </div>
             );
           })}

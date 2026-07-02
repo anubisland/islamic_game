@@ -58,6 +58,34 @@ export const achievements: Achievement[] = [
     icon: "📗",
     stageId: "hadith",
   },
+  {
+    id: "saaim",
+    title: "الصائم",
+    description: "أكمل مرحلة رمضان والصيام",
+    icon: "🌙",
+    stageId: "ramadan",
+  },
+  {
+    id: "haajj",
+    title: "الحاج",
+    description: "أكمل مرحلة الحج والعمرة",
+    icon: "🕋",
+    stageId: "hajj",
+  },
+  {
+    id: "miraji",
+    title: "المعارجي",
+    description: "أكمل مرحلة الإسراء والمعراج",
+    icon: "🐎",
+    stageId: "isra-wal-miraj",
+  },
+  {
+    id: "raashid",
+    title: "الراشدي",
+    description: "أكمل مرحلة الخلفاء الراشدون",
+    icon: "⚔️",
+    stageId: "khulafa",
+  },
 ];
 
 export function checkAchievements(
@@ -80,6 +108,10 @@ export function checkAchievements(
   if (completedStageIds.includes("fiqh")) earned.push("faqih");
   if (completedStageIds.includes("adhkar")) earned.push("dhaakir");
   if (completedStageIds.includes("hadith")) earned.push("muhaddith");
+  if (completedStageIds.includes("ramadan")) earned.push("saaim");
+  if (completedStageIds.includes("hajj")) earned.push("haajj");
+  if (completedStageIds.includes("isra-wal-miraj")) earned.push("miraji");
+  if (completedStageIds.includes("khulafa")) earned.push("raashid");
 
   return earned;
 }
