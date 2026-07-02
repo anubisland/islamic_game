@@ -1,0 +1,40 @@
+:root {
+  --green-primary: #1b6b3e;
+  --green-light: #27ae60;
+  --green-dark: #145530;
+  --gold: #d4a02b;
+  --gold-light: #f0c75e;
+  --cream: #faf3e0;
+  --bg: #f5f0e6;
+  --text: #2c2c2c;
+  --text-light: #5a5a5a;
+  --card-bg: #ffffff;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --radius: 12px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", "Cairo", Tahoma, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  direction: rtl;
+  min-height: 100vh;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
