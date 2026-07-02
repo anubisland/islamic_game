@@ -99,7 +99,11 @@ export function ArchitectHome({ onSelectPuzzle, onBack, completedPuzzles, puzzle
                   onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "var(--shadow-lg)"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "var(--shadow)"; }}
                 >
+                  {s.puzzleType === "tesselation" && s.tileSlots ? (
+                  <TileMiniPreview slots={s.tileSlots} />
+                ) : (
                   <MiniGrid pattern={s.pattern ?? []} palette={s.palette ?? ["#ccc"]} />
+                )}
                   <div style={{ fontSize: "0.78rem", fontWeight: 700, marginTop: "0.35rem", color: "var(--text)" }}>
                     {s.title}
                   </div>
@@ -137,6 +141,34 @@ function MiniGrid({ pattern, palette }: { pattern: number[][]; palette: string[]
           borderRadius: 1,
           width: "100%",
           aspectRatio: "1",
+        }} />
+      ))}
+    </div>
+  );
+}
+
+function TileMiniPreview({ slots }: { slots: { x: number; y: number; color: string; accepts: string }[] }) {
+  return (
+    <div style={{
+      width: 72,
+      height: 72,
+      margin: "0 auto",
+      position: "relative",
+      background: "rgba(245,240,230,0.5)",
+      borderRadius: 6,
+    }}>
+      {slots.map((s, i) => (
+        <div key={i} style={{
+          position: "absolute",
+          left: `calc(${s.x}% * 0.72 - 10px)`,
+          top: `calc(${s.y}% * 0.72 - 10px)`,
+          width: 20,
+          height: 20,
+          clipPath: s.accepts === "triangle"
+            ? "polygon(50% 0%, 0% 100%, 100% 100%)"
+            : "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+          background: s.color,
+          opacity: 0.6,
         }} />
       ))}
     </div>
