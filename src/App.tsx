@@ -73,7 +73,11 @@ export default function App() {
             .filter(([, p]) => p.completed)
             .map(([id]) => id);
           if (!completedIds.includes(stage.id) && stars > 0) completedIds.push(stage.id);
-          checkAchievements(completedCount, stages.length, stageStars, completedIds).forEach((id) => {
+          const perfectStageIds = Object.entries(progress.stages)
+            .filter(([, p]) => p.score === p.totalQuestions && p.totalQuestions > 0)
+            .map(([id]) => id);
+          if (score === total) perfectStageIds.push(stage.id);
+          checkAchievements(completedCount, stages.length, stageStars, completedIds, perfectStageIds).forEach((id) => {
             if (!progress.achievements?.includes(id)) {
               addAchievement(id);
               newUnlock = true;

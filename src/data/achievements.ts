@@ -93,6 +93,7 @@ export function checkAchievements(
   totalStages: number,
   stageStars: Record<string, number>,
   completedStageIds: string[] = [],
+  perfectStageIds: string[] = [],
 ): string[] {
   const earned: string[] = [];
   const allStarCounts = Object.values(stageStars);
@@ -104,6 +105,8 @@ export function checkAchievements(
   if (allStarCounts.length === totalStages && allStarCounts.every((s) => s >= 3)) {
     earned.push("perfectionist");
   }
+
+  if (perfectStageIds.length > 0) earned.push("full-score");
 
   if (completedStageIds.includes("fiqh")) earned.push("faqih");
   if (completedStageIds.includes("adhkar")) earned.push("dhaakir");
