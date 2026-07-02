@@ -265,7 +265,16 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
 
               <button
                 style={btnPrimary}
-                onClick={() => { sound.click(); setPhase("lessons"); }}
+                onClick={() => {
+                  sound.click();
+                  if (stage.lessons.length === 0) {
+                    setLives(config.lives);
+                    setShuffledQuestions(shuffleQuestions(stage.questions));
+                    setPhase("quiz");
+                  } else {
+                    setPhase("lessons");
+                  }
+                }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "translateY(-2px)";
                 }}
@@ -273,7 +282,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
                   e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
-                ابدأ التعلم
+                {stage.lessons.length === 0 ? "ابدأ الاختبار" : "ابدأ التعلم"}
               </button>
             </div>
           </PhaseContainer>
