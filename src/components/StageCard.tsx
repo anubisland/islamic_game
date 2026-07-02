@@ -35,7 +35,7 @@ export function StageCard({ stage, progress, locked, onClick }: Props) {
         cursor: locked ? "not-allowed" : "pointer",
         background: bg,
         borderColor,
-        transform: hovered && !locked ? "translateY(-6px)" : "translateY(0)",
+        transform: hovered && !locked ? "translateY(-6px) scale(1.02)" : "translateY(0) scale(1)",
         boxShadow: hovered && !locked ? "var(--shadow-lg)" : "var(--shadow)",
       }}
     >
@@ -64,6 +64,7 @@ export function StageCard({ stage, progress, locked, onClick }: Props) {
                 color: i < stars ? "var(--gold)" : "#ddd",
                 animation: i < stars ? `starPop 0.5s ease ${i * 0.15}s forwards` : "none",
                 display: "inline-block",
+                ...(i < stars ? { textShadow: stars === 3 ? "0 0 8px rgba(212,160,43,0.5)" : "none" } : {}),
               }}
             >
               ★
