@@ -6,6 +6,7 @@ import { FillPuzzle } from "../components/FillPuzzle";
 import { SymmetryPuzzle } from "../components/SymmetryPuzzle";
 import { ArchBalancePuzzle } from "../components/ArchBalancePuzzle";
 import { PatternMatrixPuzzle } from "../components/PatternMatrixPuzzle";
+import { TransformationPuzzle } from "../components/TransformationPuzzle";
 
 interface Props {
   stage: ArchitectStage;
@@ -75,6 +76,20 @@ export function PuzzlePage({ stage, onComplete, onBack }: Props) {
         stage={{
           ...stage,
           rounds: stage.rounds!,
+        }}
+        onComplete={onComplete}
+        onBack={onBack}
+      />
+    );
+  }
+
+  if (stage.puzzleType === "transform") {
+    return (
+      <TransformationPuzzle
+        stage={{
+          ...stage,
+          rounds: stage.transformRounds!,
+          palette: stage.palette!,
         }}
         onComplete={onComplete}
         onBack={onBack}

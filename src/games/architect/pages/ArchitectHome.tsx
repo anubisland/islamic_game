@@ -105,6 +105,8 @@ export function ArchitectHome({ onSelectPuzzle, onBack, completedPuzzles, puzzle
                   <BalanceMiniPreview arches={s.arches} />
                 ) : s.puzzleType === "patternmatrix" && s.rounds ? (
                   <MatrixMiniPreview />
+                ) : s.puzzleType === "transform" && s.palette ? (
+                  <div style={{ fontSize: "1.5rem", lineHeight: "72px" }}>🔄</div>
                 ) : (
                   <MiniGrid pattern={s.pattern ?? []} palette={s.palette ?? ["#ccc"]} />
                 )}

@@ -1,5 +1,6 @@
 import type { TilePiece, TileSlot } from "../components/TilePuzzle";
 import type { PatternRound } from "../components/PatternMatrixPuzzle";
+import type { TransformRound } from "../components/TransformationPuzzle";
 
 interface BalanceArch {
   id: string;
@@ -16,7 +17,7 @@ export interface ArchitectStage {
   era: string;
   eraIcon: string;
   icon: string;
-  puzzleType?: "symmetry" | "tesselation" | "fill" | "archbalance" | "patternmatrix";
+  puzzleType?: "symmetry" | "tesselation" | "fill" | "archbalance" | "patternmatrix" | "transform";
   /** symmetry: Left half pattern (rows x halfCols) — 1-indexed color IDs */
   /** fill: Full grid pattern (rows x cols) — 0=empty, >0=prefilled */
   pattern?: number[][];
@@ -36,6 +37,8 @@ export interface ArchitectStage {
   rightLabel?: string;
   /** patternmatrix: pattern rounds */
   rounds?: PatternRound[];
+  /** transform: transformation rounds */
+  transformRounds?: TransformRound[];
   /** Info shown after completion */
   info: { title: string; content: string };
 }
@@ -194,20 +197,53 @@ export const architectStages: ArchitectStage[] = [
   {
     id: "abbasid-2",
     title: "زخارف الطوب",
-    subtitle: "الخط الكوفي الهندسي",
+    subtitle: "التدوير الذهني للأنماط",
     era: "العصر العباسي",
     eraIcon: "🏺",
-    icon: "🔲",
-    gridSize: 6,
-    palette: [RUST, PALE_GOLD, WHITE],
-    hints: 4,
-    pattern: [
-      [1, 0, 0], [1, 1, 0], [1, 1, 1],
-      [1, 1, 1], [1, 1, 0], [1, 0, 0],
+    icon: "🔄",
+    puzzleType: "transform",
+    palette: [RUST, "#D4A02B", "#1565C0"],
+    transformRounds: [
+      {
+        source: [[1,0,0,1],[0,1,1,0],[0,1,1,0],[1,0,0,1]],
+        hintAr: "اختر النمط بعد تدويره 90° باتجاه عقارب الساعة",
+        hintEn: "Pick the pattern after 90° clockwise rotation",
+        options: [
+          [[1,0,0,1],[0,1,1,0],[0,1,1,0],[1,0,0,1]],
+          [[1,0,0,0],[0,1,1,0],[0,1,1,0],[1,0,0,1]],
+          [[1,0,1,0],[0,1,0,1],[1,0,1,0],[0,1,0,1]],
+          [[1,0,1,0],[1,1,0,0],[0,0,1,1],[0,1,0,1]],
+        ],
+        correctIndex: 2,
+      },
+      {
+        source: [[0,1,0],[1,0,1],[0,1,0]],
+        hintAr: "اختر النمط بعد انعكاس أفقي (مرآة يسار←يمين)",
+        hintEn: "Pick the pattern after horizontal reflection",
+        options: [
+          [[0,1,0],[1,0,1],[0,1,0]],
+          [[0,1,0],[0,1,0],[0,1,0]],
+          [[1,0,1],[0,1,0],[1,0,1]],
+          [[0,1,0],[0,1,0],[1,0,1]],
+        ],
+        correctIndex: 0,
+      },
+      {
+        source: [[1,1,0,0],[1,0,0,1],[0,0,1,1],[0,1,1,0]],
+        hintAr: "اختر النمط بعد تدويره 180°",
+        hintEn: "Pick the pattern after 180° rotation",
+        options: [
+          [[1,1,0,0],[1,0,0,1],[0,0,1,1],[0,1,1,0]],
+          [[0,1,1,0],[1,1,0,0],[0,0,1,1],[1,0,0,1]],
+          [[0,1,1,0],[1,1,0,0],[1,0,0,1],[0,0,1,1]],
+          [[0,1,1,0],[0,0,1,1],[1,0,0,1],[1,1,0,0]],
+        ],
+        correctIndex: 3,
+      },
     ],
     info: {
       title: "الخط الكوفي الهندسي",
-      content: "الخط الكوفي هو أقدم نوع من الخط العربي، ظهر في العصر العباسي. استخدم في زخرفة المساجد والقصور، وتميز بأشكاله الهندسية المنتظمة التي تتناغم مع فنون العمارة الإسلامية.",
+      content: "الخط الكوفي هو أقدم نوع من الخط العربي، ظهر في العصر العباسي. استخدم في زخرفة المساجد والقصور، وتميز بأشكاله الهندسية المنتظمة التي تتناغم مع فنون العمارة الإسلامية. التدوير والانعكاس هما من أساسيات الزخرفة الهندسية الإسلامية.",
     },
   },
   {
