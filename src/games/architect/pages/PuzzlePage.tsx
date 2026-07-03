@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { ArchitectStage } from "../data/stages";
 import { useTranslation } from "../../../i18n";
 import { TilePuzzle } from "../components/TilePuzzle";
+import { FillPuzzle } from "../components/FillPuzzle";
 import { SymmetryPuzzle } from "../components/SymmetryPuzzle";
 
 interface Props {
@@ -32,6 +33,22 @@ export function PuzzlePage({ stage, onComplete, onBack }: Props) {
           onComplete={() => onComplete(stage.id, 3, 0)}
         />
       </div>
+    );
+  }
+
+  if (stage.puzzleType === "fill") {
+    return (
+      <FillPuzzle
+        stage={{
+          ...stage,
+          gridSize: stage.gridSize ?? 6,
+          pattern: stage.pattern!,
+          palette: stage.palette!,
+          hints: stage.hints ?? 3,
+        }}
+        onComplete={onComplete}
+        onBack={onBack}
+      />
     );
   }
 

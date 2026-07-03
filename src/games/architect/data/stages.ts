@@ -7,14 +7,17 @@ export interface ArchitectStage {
   era: string;
   eraIcon: string;
   icon: string;
-  puzzleType?: "symmetry" | "tesselation";
+  puzzleType?: "symmetry" | "tesselation" | "fill";
   /** symmetry: Left half pattern (rows x halfCols) — 1-indexed color IDs */
+  /** fill: Full grid pattern (rows x cols) — 0=empty, >0=prefilled */
   pattern?: number[][];
   /** Color palette for this era */
   palette?: string[];
   /** # of prefilled cells as hints */
   hints?: number;
   gridSize?: number;
+  /** fill: Reference pattern shown as overlay (defaults to pattern) */
+  reference?: number[][];
   /** tesselation: pieces and slots */
   tiles?: TilePiece[];
   tileSlots?: TileSlot[];
@@ -63,24 +66,29 @@ export const architectStages: ArchitectStage[] = [
     },
   },
 
-  // ======== Umayyad (الأموي) ========
+  // ======== Umayyad (الأموي) — Mosaic Fill ========
   {
     id: "umayyad-2",
     title: "قبة الصخرة",
-    subtitle: "القبة الذهبية المباركة",
+    subtitle: "فسيفساء القبة الذهبية",
     era: "العصر الأموي",
     eraIcon: "🏛️",
     icon: "🌟",
+    puzzleType: "fill",
     gridSize: 6,
     palette: [PALE_GOLD, DEEP_BLUE, WHITE],
-    hints: 3,
+    hints: 4,
     pattern: [
-      [1, 1, 0], [1, 0, 1], [0, 1, 0],
-      [0, 1, 0], [1, 0, 1], [1, 1, 0],
+      [0, 0, 2, 2, 0, 0],
+      [0, 2, 1, 1, 2, 0],
+      [2, 1, 1, 1, 1, 2],
+      [2, 1, 1, 1, 1, 2],
+      [0, 2, 1, 1, 2, 0],
+      [0, 0, 2, 0, 0, 0],
     ],
     info: {
-      title: "قبة الصخرة",
-      content: "بُنيت قبة الصخرة في القدس عام 691م بأمر من الخليفة عبد الملك بن مروان. وهي من أقدم المعالم الإسلامية، وتتميز بقبتها الذهبية وزخارفها الفسيفسائية الرائعة داخل البناء.",
+      title: "قبة الصخرة — القدس الشريف",
+      content: "بُنيت قبة الصخرة في القدس عام 691م بأمر من الخليفة عبد الملك بن مروان. وهي من أقدم المعالم الإسلامية وأجملها، وتتميز بقبتها الذهبية البالغ ارتفاعها 35 متراً، وزخارفها الفسيفسائية الرائعة التي تزين جدرانها الداخلية والخارجية.",
     },
   },
   {
