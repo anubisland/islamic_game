@@ -30,7 +30,7 @@ interface Props {
   onComplete: () => void;
 }
 
-export function TilePuzzle({ title, subtitle, slotSize = 90, pieces: piecesInit, slots, info, onComplete }: Props) {
+export function TilePuzzle({ title, subtitle, slotSize = 80, pieces: piecesInit, slots, info, onComplete }: Props) {
   const { lang } = useTranslation();
   const sound = useSound();
   const [placed, setPlaced] = useState<Record<string, string>>({});
@@ -40,106 +40,78 @@ export function TilePuzzle({ title, subtitle, slotSize = 90, pieces: piecesInit,
   );
   const [completed, setCompleted] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-  const [dragging, setDragging] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
-  const [wrongShake, setWrongShake] = useState<string | null>(null);
-  const [showGuide, setShowGuide] = useState(true);
+  const [wrongId, setWrongId] = useState<string | null>(null);
   const [showRef, setShowRef] = useState(false);
+  const areaRef = useRef<HTMLDivElement>(null);
 
   const available = piecesInit.filter(p => !placed[p.id]);
 
   function selectPiece(id: string) {
     if (completed) return;
     sound.click();
-    setSelected(prev => prev === id ? null : id);
-    setShowGuide(false);
+    setSelected(prev => (prev === id ? null : id));
   }
 
-  function rotatePiece(id: string) {
-    if (dragging) return;
+  function rotateSelected() {
+    if (!selected || completed) return;
     sound.click();
-    setRotation(prev => ({ ...prev, [id]: ((prev[id] ?? 0) + 45) % 360 }));
+    setRotation(prev => ({ ...prev, [selected]: ((prev[selected] ?? 0) + 45) % 360 }));
   }
 
-  function handleMouseDown(id: string, e: React.MouseEvent | React.TouchEvent) {
-    if (completed) return;
-    setSelected(id);
-    setShowGuide(false);
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setDragging(id);
-    const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
-    setDragPos({ x: cx - rect.left - 30, y: cy - rect.top - 30 });
-  }
-
-  function handleMove(e: React.MouseEvent | React.TouchEvent) {
-    if (!dragging) return;
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
-    setDragPos({ x: cx - rect.left - 30, y: cy - rect.top - 30 });
-  }
-
-  function handleEnd(e: React.MouseEvent | React.TouchEvent) {
-    if (!dragging) return;
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = "changedTouches" in e ? e.changedTouches[0].clientX : e.clientX;
-    const cy = "changedTouches" in e ? e.changedTouches[0].clientY : e.clientY;
-    const relX = cx - rect.left;
-    const relY = cy - rect.top;
-
-    const piece = piecesInit.find(p => p.id === dragging);
-    if (!piece) { setDragging(null); setDragPos(null); return; }
-
+  function tryPlace(pieceId: string, slotX: number, slotY: number) {
+    const piece = piecesInit.find(p => p.id === pieceId);
+    if (!piece) return false;
     const slot = slots.find(s => s.id === piece.slotId);
-    if (!slot) { setDragging(null); setDragPos(null); return; }
+    if (!slot) return false;
 
-    const sx = (slot.x / 100) * rect.width;
-    const sy = (slot.y / 100) * rect.height;
-    const dist = Math.sqrt((relX - sx) ** 2 + (relY - sy) ** 2);
+    const sx = (slot.x / 100) * (areaRef.current?.clientWidth ?? 300);
+    const sy = (slot.y / 100) * (areaRef.current?.clientHeight ?? 300);
+    const dist = Math.sqrt((slotX - sx) ** 2 + (slotY - sy) ** 2);
     const r = rotation[piece.id] ?? 0;
     const rotOk = Math.abs((r - slot.correctRotation) % 360) < 22.5 ||
                   Math.abs((r - slot.correctRotation) % 360 - 360) < 22.5;
 
-    if (dist < slotSize && rotOk) {
+    if (dist < slotSize + 10 && rotOk) {
       sound.correct();
-      setPlaced(prev => ({ ...prev, [piece.id]: slot.id }));
+      setPlaced(prev => ({ ...prev, [pieceId]: slot.id }));
       setSelected(null);
-      const left = piecesInit.filter(p => p.id !== piece.id && !placed[p.id]).length - 1;
+      const left = piecesInit.filter(p => p.id !== pieceId && !placed[p.id]).length - 1;
       if (left === 0) {
         setCompleted(true);
         setTimeout(() => { setShowInfo(true); onComplete(); }, 600);
       }
-    } else {
-      sound.wrong();
-      setWrongShake(piece.id);
-      setTimeout(() => setWrongShake(null), 400);
+      return true;
     }
+    return false;
+  }
 
-    setDragging(null);
-    setDragPos(null);
+  function handleAreaClick(e: React.MouseEvent) {
+    if (!selected || completed) return;
+    const rect = areaRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    if (!tryPlace(selected, x, y)) {
+      sound.wrong();
+      setWrongId(selected);
+      setSelected(null);
+      setTimeout(() => setWrongId(null), 300);
+    }
+  }
+
+  function handleTouchSlot(slotX: number, slotY: number) {
+    if (!selected || completed) return;
+    if (!tryPlace(selected, slotX, slotY)) {
+      sound.wrong();
+      setWrongId(selected);
+      setSelected(null);
+      setTimeout(() => setWrongId(null), 300);
+    }
   }
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        maxWidth: 500,
-        margin: "0 auto",
-        padding: "1rem 0.75rem",
-        userSelect: "none",
-        touchAction: "none",
-        position: "relative",
-      }}
-      onMouseMove={handleMove}
-      onTouchMove={handleMove}
-      onMouseUp={handleEnd}
-      onTouchEnd={handleEnd}
-    >
+    <div style={{ maxWidth: 500, margin: "0 auto", padding: "1rem 0.75rem", userSelect: "none" }}>
+      {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
         <div>
           <h2 style={{ fontSize: "1.1rem", color: "var(--green-primary)", margin: 0 }}>{title}</h2>
@@ -148,36 +120,44 @@ export function TilePuzzle({ title, subtitle, slotSize = 90, pieces: piecesInit,
         <button
           onClick={() => setShowRef(!showRef)}
           style={{
-            fontSize: "0.75rem", padding: "0.3rem 0.6rem", background: showRef ? "var(--green-light)" : "transparent",
-            color: showRef ? "#fff" : "var(--green-primary)", borderRadius: 8, border: "1px solid var(--green-primary)",
+            fontSize: "0.75rem", padding: "0.3rem 0.6rem",
+            background: showRef ? "var(--green-light)" : "transparent",
+            color: showRef ? "#fff" : "var(--green-primary)",
+            borderRadius: 8, border: "1px solid var(--green-primary)",
             fontWeight: 600, whiteSpace: "nowrap",
           }}
         >
-          {showRef ? (lang === "ar" ? "إخفاء" : "Hide") : (lang === "ar" ? "🔍 مرجع" : "🔍 Reference")}
+          {showRef
+            ? (lang === "ar" ? "✕ إخفاء" : "✕ Hide")
+            : (lang === "ar" ? "🔍 شكل كامل" : "🔍 Reference")}
         </button>
       </div>
 
-      {/* Guide banner */}
-      {showGuide && (
-        <div className="animate-slide-down" style={{
-          padding: "0.6rem 0.75rem",
-          background: "rgba(212,160,43,0.12)",
-          borderRadius: 8,
-          border: "1px solid rgba(212,160,43,0.3)",
-          fontSize: "0.82rem",
-          color: "var(--text)",
-          marginBottom: "0.6rem",
-          textAlign: "center",
-          lineHeight: 1.6,
-        }}>
-          {lang === "ar"
-            ? "💡 اسحب القطعة من الأسفل وضعها في الفراغ المناسب. اختر قطعة ثم اضغط 🔄 للتدوير."
-            : "💡 Drag a piece from below and place it in the correct slot. Select a piece, then tap 🔄 to rotate."}
-        </div>
-      )}
+      {/* Guide */}
+      <div style={{
+        padding: "0.5rem 0.75rem",
+        background: "rgba(212,160,43,0.12)",
+        borderRadius: 8,
+        border: "1px solid rgba(212,160,43,0.3)",
+        fontSize: "0.82rem",
+        color: "var(--text)",
+        marginBottom: "0.75rem",
+        textAlign: "center",
+        lineHeight: 1.6,
+      }}>
+        {selected
+          ? (lang === "ar"
+              ? "👆 اضغط على الفراغ المناسب في النجمة لوضع القطعة، أو اضغط 🔄 لتدويرها"
+              : "👆 Tap the correct slot on the star to place the piece, or tap 🔄 to rotate")
+          : (lang === "ar"
+              ? "💡 اختر قطعة من الأسفل، ثم اضغط على مكانها في النجمة لتركيبها. استخدم 🔄 للتدوير"
+              : "💡 Pick a piece below, then tap its place on the star. Use 🔄 to rotate")}
+      </div>
 
       {/* Pattern area */}
       <div
+        ref={areaRef}
+        onClick={handleAreaClick}
         style={{
           position: "relative", width: "100%", aspectRatio: "1", maxWidth: 360,
           margin: "0 auto",
@@ -185,10 +165,11 @@ export function TilePuzzle({ title, subtitle, slotSize = 90, pieces: piecesInit,
           borderRadius: 14,
           border: completed ? "3px solid var(--gold)" : "3px solid var(--border)",
           overflow: "hidden",
+          cursor: selected ? "crosshair" : "default",
         }}
       >
         {/* Decorative bg */}
-        <svg viewBox="0 0 300 300" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.12 }}>
+        <svg viewBox="0 0 300 300" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.10 }}>
           <defs>
             <pattern id="bg-p" patternUnits="userSpaceOnUse" width="30" height="30">
               <path d="M0 15 L15 0 L30 15 L15 30Z" fill="none" stroke="#1b6b3e" strokeWidth="0.5" />
@@ -199,7 +180,7 @@ export function TilePuzzle({ title, subtitle, slotSize = 90, pieces: piecesInit,
 
         {/* Reference overlay */}
         {showRef && !completed && (
-          <div style={{ position: "absolute", inset: 0, zIndex: 5, opacity: 0.25, pointerEvents: "none" }}>
+          <div style={{ position: "absolute", inset: 0, zIndex: 5, opacity: 0.35, pointerEvents: "none" }}>
             {slots.map(slot => (
               <div key={slot.id} style={{
                 position: "absolute",
@@ -212,29 +193,48 @@ export function TilePuzzle({ title, subtitle, slotSize = 90, pieces: piecesInit,
                   ? "polygon(50% 0%, 0% 100%, 100% 100%)"
                   : "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
                 background: slot.color,
+                border: "1px solid rgba(0,0,0,0.15)",
               }} />
             ))}
           </div>
         )}
+
+        {/* Star center decorative */}
+        <div style={{
+          position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+          width: slotSize * 0.5, height: slotSize * 0.5,
+          background: "rgba(212,160,43,0.15)",
+          borderRadius: "50%",
+          zIndex: 0,
+          border: "1px solid rgba(212,160,43,0.25)",
+        }} />
 
         {/* Slot outlines */}
         {slots.map(slot => {
           const isFilled = Object.values(placed).includes(slot.id);
           const isTri = slot.accepts === "triangle";
           return (
-            <div key={slot.id} style={{
-              position: "absolute",
-              left: `calc(${slot.x}% - ${slotSize / 2}px)`,
-              top: `calc(${slot.y}% - ${slotSize / 2}px)`,
-              width: slotSize,
-              height: slotSize,
-              border: isFilled ? "2px solid var(--gold)" : "2px dashed rgba(0,0,0,0.2)",
-              transform: `rotate(${slot.correctRotation}deg)`,
-              clipPath: isTri ? "polygon(50% 0%, 0% 100%, 100% 100%)" : "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
-              background: isFilled ? slot.color : "rgba(255,255,255,0.3)",
-              transition: "background 0.3s, border-color 0.3s",
-              zIndex: 1,
-            }} />
+            <div
+              key={slot.id}
+              onClick={(e) => { e.stopPropagation(); if (selected) handleTouchSlot(
+                (slot.x / 100) * (areaRef.current?.clientWidth ?? 300),
+                (slot.y / 100) * (areaRef.current?.clientHeight ?? 300)
+              ); }}
+              style={{
+                position: "absolute",
+                left: `calc(${slot.x}% - ${slotSize / 2}px)`,
+                top: `calc(${slot.y}% - ${slotSize / 2}px)`,
+                width: slotSize,
+                height: slotSize,
+                border: isFilled ? "2px solid var(--gold)" : "2px dashed rgba(0,0,0,0.25)",
+                transform: `rotate(${slot.correctRotation}deg)`,
+                clipPath: isTri ? "polygon(50% 0%, 0% 100%, 100% 100%)" : "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+                background: isFilled ? slot.color : "rgba(255,255,255,0.3)",
+                transition: "background 0.3s, border-color 0.3s",
+                zIndex: 1,
+                cursor: selected ? "pointer" : "default",
+              }}
+            />
           );
         })}
 
@@ -254,40 +254,22 @@ export function TilePuzzle({ title, subtitle, slotSize = 90, pieces: piecesInit,
               background: p.color,
               zIndex: 2,
               animation: "fadeIn 0.3s ease",
+              boxShadow: "0 0 6px rgba(0,0,0,0.15)",
             }} />
           );
         })}
-
-        {/* Drag ghost */}
-        {dragging && dragPos && (
-          <div style={{
-            position: "absolute",
-            left: dragPos.x,
-            top: dragPos.y,
-            width: slotSize,
-            height: slotSize,
-            transform: `rotate(${rotation[dragging] ?? 0}deg)`,
-            clipPath: (piecesInit.find(p => p.id === dragging)?.shape === "triangle")
-              ? "polygon(50% 0%, 0% 100%, 100% 100%)"
-              : "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
-            background: piecesInit.find(p => p.id === dragging)?.color ?? "#ccc",
-            opacity: 0.8,
-            zIndex: 10,
-            pointerEvents: "none",
-          }} />
-        )}
       </div>
 
       {/* Toolbox */}
       {!completed && (
         <div style={{
           display: "flex",
-          gap: "0.75rem",
+          gap: "1rem",
           justifyContent: "center",
           marginTop: "1rem",
           flexWrap: "wrap",
-          minHeight: 80,
-          padding: "0.75rem 0.5rem",
+          minHeight: 90,
+          padding: "0.75rem",
           background: "var(--card-bg)",
           borderRadius: 10,
           border: "1px solid var(--border)",
@@ -299,13 +281,11 @@ export function TilePuzzle({ title, subtitle, slotSize = 90, pieces: piecesInit,
           ) : (
             available.map(p => {
               const isSelected = selected === p.id;
-              const isWrong = wrongShake === p.id;
+              const isWrong = wrongId === p.id;
               return (
                 <div key={p.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem" }}>
                   <div
-                    onMouseDown={(e) => handleMouseDown(p.id, e)}
-                    onTouchStart={(e) => handleMouseDown(p.id, e)}
-                    onClick={() => { if (!dragging) selectPiece(p.id); }}
+                    onClick={() => selectPiece(p.id)}
                     style={{
                       width: 64,
                       height: 64,
@@ -314,19 +294,19 @@ export function TilePuzzle({ title, subtitle, slotSize = 90, pieces: piecesInit,
                         : "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
                       background: p.color,
                       transform: `rotate(${rotation[p.id] ?? 0}deg)`,
-                      cursor: "grab",
+                      cursor: "pointer",
                       transition: "transform 0.2s, box-shadow 0.2s",
                       boxShadow: isSelected
-                        ? "0 0 0 3px var(--gold), 0 4px 12px rgba(0,0,0,0.2)"
+                        ? "0 0 0 3px var(--gold), 0 4px 12px rgba(0,0,0,0.25)"
                         : "0 2px 8px rgba(0,0,0,0.15)",
                       animation: isWrong ? "shake 0.4s ease" : "none",
                     }}
                   />
                   {isSelected && (
                     <button
-                      onClick={() => rotatePiece(p.id)}
+                      onClick={rotateSelected}
                       style={{
-                        fontSize: "0.7rem", padding: "0.15rem 0.5rem",
+                        fontSize: "0.7rem", padding: "0.2rem 0.5rem",
                         background: "var(--green-light)", color: "#fff",
                         borderRadius: 6, fontWeight: 600, whiteSpace: "nowrap",
                       }}
