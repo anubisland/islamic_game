@@ -101,6 +101,10 @@ export function ArchitectHome({ onSelectPuzzle, onBack, completedPuzzles, puzzle
                 >
                   {s.puzzleType === "tesselation" && s.tileSlots ? (
                   <TileMiniPreview slots={s.tileSlots} />
+                ) : s.puzzleType === "archbalance" && s.arches ? (
+                  <BalanceMiniPreview arches={s.arches} />
+                ) : s.puzzleType === "patternmatrix" && s.rounds ? (
+                  <MatrixMiniPreview />
                 ) : (
                   <MiniGrid pattern={s.pattern ?? []} palette={s.palette ?? ["#ccc"]} />
                 )}
@@ -170,6 +174,45 @@ function TileMiniPreview({ slots }: { slots: { x: number; y: number; color: stri
           background: s.color,
           opacity: 0.6,
         }} />
+      ))}
+    </div>
+  );
+}
+
+function BalanceMiniPreview({ arches }: { arches: { weight: number; color: string }[] }) {
+  const left = arches.filter((_, i) => i % 2 === 0);
+  const right = arches.filter((_, i) => i % 2 !== 0);
+  return (
+    <div style={{ width: 72, height: 72, margin: "0 auto", display: "flex", gap: 2, alignItems: "flex-end", justifyContent: "center" }}>
+      <div style={{ display: "flex", flexDirection: "column-reverse", gap: 1, alignItems: "center" }}>
+        {left.map((a, i) => (
+          <div key={i} style={{ width: 28, background: a.color, borderRadius: "2px 2px 0 0", height: Math.max(8, a.weight * 5), opacity: 0.7 }} />
+        ))}
+      </div>
+      <div style={{ width: 4, height: 60, background: "#5C6BC0", borderRadius: 2 }} />
+      <div style={{ display: "flex", flexDirection: "column-reverse", gap: 1, alignItems: "center" }}>
+        {right.map((a, i) => (
+          <div key={i} style={{ width: 28, background: a.color, borderRadius: "2px 2px 0 0", height: Math.max(8, a.weight * 5), opacity: 0.7 }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MatrixMiniPreview() {
+  const shapes = ["●", "■", "◆"];
+  const colors = ["#D4A02B", "#1565C0", "#C62828"];
+  return (
+    <div style={{ width: 72, height: 72, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, padding: 2 }}>
+      {[0, 1, 2, 3, 4, 5, 6, 7, -1].map((i, idx) => (
+        <div key={idx} style={{
+          background: "rgba(245,240,230,0.5)", borderRadius: 2,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: i >= 0 ? "0.7rem" : "0.8rem",
+          color: i >= 0 ? colors[i % 3] : "#5C6BC0", fontWeight: 700,
+        }}>
+          {i >= 0 ? shapes[i % 3] : "?"}
+        </div>
       ))}
     </div>
   );

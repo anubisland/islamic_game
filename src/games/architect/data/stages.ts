@@ -1,4 +1,13 @@
 import type { TilePiece, TileSlot } from "../components/TilePuzzle";
+import type { PatternRound } from "../components/PatternMatrixPuzzle";
+
+interface BalanceArch {
+  id: string;
+  weight: number;
+  color: string;
+  labelAr: string;
+  labelEn: string;
+}
 
 export interface ArchitectStage {
   id: string;
@@ -7,7 +16,7 @@ export interface ArchitectStage {
   era: string;
   eraIcon: string;
   icon: string;
-  puzzleType?: "symmetry" | "tesselation" | "fill";
+  puzzleType?: "symmetry" | "tesselation" | "fill" | "archbalance" | "patternmatrix";
   /** symmetry: Left half pattern (rows x halfCols) — 1-indexed color IDs */
   /** fill: Full grid pattern (rows x cols) — 0=empty, >0=prefilled */
   pattern?: number[][];
@@ -21,6 +30,12 @@ export interface ArchitectStage {
   /** tesselation: pieces and slots */
   tiles?: TilePiece[];
   tileSlots?: TileSlot[];
+  /** archbalance: arch pieces for balance puzzle */
+  arches?: BalanceArch[];
+  leftLabel?: string;
+  rightLabel?: string;
+  /** patternmatrix: pattern rounds */
+  rounds?: PatternRound[];
   /** Info shown after completion */
   info: { title: string; content: string };
 }
@@ -94,20 +109,24 @@ export const architectStages: ArchitectStage[] = [
   {
     id: "umayyad-3",
     title: "قوس المحراب",
-    subtitle: "الأقواس الدائرية الأموية",
+    subtitle: "التوازن المعماري",
     era: "العصر الأموي",
     eraIcon: "🏛️",
-    icon: "🏗️",
-    gridSize: 6,
-    palette: [PALE_GOLD, DEEP_BLUE, WHITE],
-    hints: 3,
-    pattern: [
-      [1, 0, 1], [0, 1, 2], [0, 1, 2],
-      [0, 1, 2], [0, 1, 2], [1, 0, 1],
+    icon: "⚖️",
+    puzzleType: "archbalance",
+    leftLabel: "الجهة اليسرى",
+    rightLabel: "الجهة اليمنى",
+    arches: [
+      { id: "a1", weight: 5, color: PALE_GOLD, labelAr: "قوس ذهبي ثقيل", labelEn: "Heavy gold arch" },
+      { id: "a2", weight: 4, color: DEEP_BLUE, labelAr: "قوس أزرق", labelEn: "Blue arch" },
+      { id: "a3", weight: 3, color: RUST, labelAr: "قوس أحمر", labelEn: "Red arch" },
+      { id: "a4", weight: 3, color: WHITE, labelAr: "قوس أبيض", labelEn: "White arch" },
+      { id: "a5", weight: 2, color: FOREST, labelAr: "قوس أخضر", labelEn: "Green arch" },
+      { id: "a6", weight: 1, color: PALE_GOLD, labelAr: "قوس ذهبي خفيف", labelEn: "Light gold arch" },
     ],
     info: {
-      title: "المحراب",
-      content: "المحراب هو مكان إمامة الصلاة في المسجد. أول محراب في الإسلام أضافه الخليفة عثمان بن عفان، لكنه تطور في العصر الأموي ليصبح عنصراً معمارياً مزخرفاً يحدد اتجاه القبلة.",
+      title: "المحراب — توازن القوسين",
+      content: "المحراب هو مكان إمامة الصلاة في المسجد. أول محراب في الإسلام أضافه الخليفة عثمان بن عفان، لكنه تطور في العصر الأموي ليصبح عنصراً معمارياً مزخرفاً. التوازن المعماري هو أحد أسس العمارة الإسلامية، حيث يجب أن يكون الجانبان متساويين في الوزن البصري والهيكلي.",
     },
   },
 
@@ -115,20 +134,61 @@ export const architectStages: ArchitectStage[] = [
   {
     id: "abbasid-1",
     title: "مئذنة الملوية",
-    subtitle: "المئذنة الحلزونية الفريدة",
+    subtitle: "فك شيفرة الزخارف الحلزونية",
     era: "العصر العباسي",
     eraIcon: "🏺",
-    icon: "🕌",
-    gridSize: 6,
-    palette: [RUST, PALE_GOLD, WHITE],
-    hints: 3,
-    pattern: [
-      [2, 2, 2], [2, 1, 2], [2, 1, 2],
-      [2, 1, 2], [2, 1, 2], [2, 2, 2],
+    icon: "🧩",
+    puzzleType: "patternmatrix",
+    rounds: [
+      {
+        difficulty: "سهل",
+        grid: [
+          [{ color: "#D4A02B", shape: "circle" }, { color: "#1565C0", shape: "square" }, { color: "#C62828", shape: "diamond" }],
+          [{ color: "#1565C0", shape: "diamond" }, { color: "#C62828", shape: "circle" }, { color: "#D4A02B", shape: "square" }],
+          [{ color: "#C62828", shape: "square" }, { color: "#D4A02B", shape: "diamond" }, null],
+        ],
+        options: [
+          { color: "#1565C0", shape: "circle" },
+          { color: "#C62828", shape: "circle" },
+          { color: "#D4A02B", shape: "circle" },
+          { color: "#1565C0", shape: "square" },
+        ],
+        correctIndex: 0,
+      },
+      {
+        difficulty: "متوسط",
+        grid: [
+          [{ color: "#D4A02B", shape: "circle" }, { color: "#1565C0", shape: "diamond" }, { color: "#2E7D32", shape: "triangle" }],
+          [{ color: "#1565C0", shape: "triangle" }, { color: "#2E7D32", shape: "circle" }, null],
+          [{ color: "#2E7D32", shape: "diamond" }, { color: "#D4A02B", shape: "triangle" }, { color: "#1565C0", shape: "circle" }],
+        ],
+        options: [
+          { color: "#D4A02B", shape: "square" },
+          { color: "#1565C0", shape: "square" },
+          { color: "#D4A02B", shape: "circle" },
+          { color: "#2E7D32", shape: "square" },
+        ],
+        correctIndex: 3,
+      },
+      {
+        difficulty: "صعب",
+        grid: [
+          [{ color: "#D4A02B", shape: "triangle" }, { color: "#1565C0", shape: "square" }, { color: "#2E7D32", shape: "circle" }],
+          [{ color: "#1565C0", shape: "circle" }, null, { color: "#D4A02B", shape: "square" }],
+          [{ color: "#2E7D32", shape: "square" }, { color: "#D4A02B", shape: "circle" }, { color: "#1565C0", shape: "triangle" }],
+        ],
+        options: [
+          { color: "#2E7D32", shape: "triangle" },
+          { color: "#1565C0", shape: "triangle" },
+          { color: "#D4A02B", shape: "triangle" },
+          { color: "#1565C0", shape: "circle" },
+        ],
+        correctIndex: 2,
+      },
     ],
     info: {
       title: "مئذنة الملوية",
-      content: "مئذنة الملوية في سامراء (العراق) بُنيت عام 852م في العصر العباسي. يبلغ ارتفاعها 52 متراً، وتتميز بشكلها الحلزوني الفريد الذي لا مثيل له في العالم. كانت جزءاً من مسجد سامراء الكبير.",
+      content: "مئذنة الملوية في سامراء (العراق) بُنيت عام 852م في العصر العباسي. يبلغ ارتفاعها 52 متراً، وتتميز بشكلها الحلزوني الفريد الذي لا مثيل له في العالم. كانت جزءاً من مسجد سامراء الكبير. تحتوي زخارفها على أنماط هندسية متكررة تشبه ألغاز المصفوفات المنطقية.",
     },
   },
   {

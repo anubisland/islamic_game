@@ -4,6 +4,8 @@ import { useTranslation } from "../../../i18n";
 import { TilePuzzle } from "../components/TilePuzzle";
 import { FillPuzzle } from "../components/FillPuzzle";
 import { SymmetryPuzzle } from "../components/SymmetryPuzzle";
+import { ArchBalancePuzzle } from "../components/ArchBalancePuzzle";
+import { PatternMatrixPuzzle } from "../components/PatternMatrixPuzzle";
 
 interface Props {
   stage: ArchitectStage;
@@ -45,6 +47,34 @@ export function PuzzlePage({ stage, onComplete, onBack }: Props) {
           pattern: stage.pattern!,
           palette: stage.palette!,
           hints: stage.hints ?? 3,
+        }}
+        onComplete={onComplete}
+        onBack={onBack}
+      />
+    );
+  }
+
+  if (stage.puzzleType === "archbalance") {
+    return (
+      <ArchBalancePuzzle
+        stage={{
+          ...stage,
+          arches: stage.arches!,
+          leftLabel: stage.leftLabel ?? "",
+          rightLabel: stage.rightLabel ?? "",
+        }}
+        onComplete={onComplete}
+        onBack={onBack}
+      />
+    );
+  }
+
+  if (stage.puzzleType === "patternmatrix") {
+    return (
+      <PatternMatrixPuzzle
+        stage={{
+          ...stage,
+          rounds: stage.rounds!,
         }}
         onComplete={onComplete}
         onBack={onBack}
