@@ -15,6 +15,7 @@ interface Props {
 export function CityStage({ stage, onComplete, onBack }: Props) {
   const { lang, dir } = useTranslation();
   const [result, setResult] = useState<"correct" | "wrong" | null>(null);
+  const [puzzleKey, setPuzzleKey] = useState(0);
   const total = battutaStages.length;
   const currentIndex = battutaStages.findIndex(s => s.id === stage.id);
 
@@ -22,6 +23,11 @@ export function CityStage({ stage, onComplete, onBack }: Props) {
 
   function handlePuzzleComplete(correct: boolean) {
     setResult(correct ? "correct" : "wrong");
+  }
+
+  function handleRetry() {
+    setResult(null);
+    setPuzzleKey(k => k + 1);
   }
 
   function handleContinue() {
@@ -120,7 +126,7 @@ export function CityStage({ stage, onComplete, onBack }: Props) {
         </div>
 
         {/* Puzzle */}
-        <div style={{
+        <div key={puzzleKey} style={{
           background: "var(--card-bg)", borderRadius: "var(--radius)",
           border: "2px solid var(--border)", marginBottom: "1rem",
         }}>
@@ -171,7 +177,7 @@ export function CityStage({ stage, onComplete, onBack }: Props) {
                   {lang === "ar" ? "ليس صحيحاً، حاول مرة أخرى" : "Not quite right, try again"}
                 </p>
                 <button
-                  onClick={() => setResult(null)}
+                  onClick={() => handleRetry()}
                   style={{
                     marginTop: "0.75rem", padding: "0.6rem 2rem",
                     background: "#a03030", color: "#fff",
