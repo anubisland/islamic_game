@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useTranslation } from "../i18n";
+import { useSpeech } from "../hooks/useSpeech";
 import { TOTAL_DETECTIVE_STAGES } from "../games/detective/data/stages";
 
 interface Props {
@@ -11,7 +12,22 @@ interface Props {
 export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
   const { t, lang, setLang, dir } = useTranslation();
   const [expanded, setExpanded] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const { speak, stop } = useSpeech();
   const gh = t.gameHub;
+
+  const handleSpeak = useCallback(() => {
+    if (speaking) { stop(); setSpeaking(false); return; }
+    const text = `${gh.introCard.title}. ${gh.introCard.desc}${expanded ? ` ${gh.introCard.features.join(". ")}` : ""}`;
+    setSpeaking(true);
+    speak(text, lang);
+    const check = setInterval(() => {
+      if (!window.speechSynthesis.speaking) {
+        clearInterval(check);
+        setSpeaking(false);
+      }
+    }, 200);
+  }, [speaking, expanded, gh, lang, speak, stop]);
 
   return (
     <div dir={dir}>
@@ -54,6 +70,15 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
           <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem", textAlign: "center" }}>🕌</div>
           <h2 style={{ fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.75rem", textAlign: "center" }}>
             {gh.introCard.title}
+            <button onClick={handleSpeak} style={{
+              background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)",
+              borderRadius: "50%", width: 32, height: 32, cursor: "pointer",
+              fontSize: "0.9rem", marginLeft: "0.5rem", verticalAlign: "middle",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              color: speaking ? "#FFD700" : "#fff",
+            }}>
+              {speaking ? "⏹" : "🔊"}
+            </button>
           </h2>
           <p style={{ lineHeight: 1.8, fontSize: "0.9rem", opacity: 0.9, marginBottom: "1rem" }}>
             {gh.introCard.desc}
