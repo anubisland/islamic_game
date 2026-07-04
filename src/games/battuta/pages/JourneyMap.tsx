@@ -13,7 +13,14 @@ export function JourneyMap({ onSelectStage, onBack, completed }: Props) {
   const [expanded, setExpanded] = useState(false);
   const nextStageId = battutaStages.find(s => !completed.has(s.id))?.id ?? battutaStages[battutaStages.length - 1].id;
 
+  function isStageLocked(index: number) {
+    if (index === 0) return false;
+    return !completed.has(battutaStages[index - 1].id);
+  }
+
   function handleStageClick(stage: BattutaStage) {
+    const idx = battutaStages.findIndex(s => s.id === stage.id);
+    if (isStageLocked(idx)) return;
     onSelectStage(stage);
   }
 
@@ -128,8 +135,9 @@ export function JourneyMap({ onSelectStage, onBack, completed }: Props) {
           </svg>
 
           {/* City markers */}
-          {battutaStages.map((stage) => {
+          {battutaStages.map((stage, i) => {
             const isCompleted = completed.has(stage.id);
+            const locked = isStageLocked(i);
             const isNext = stage.id === nextStageId;
             return (
               <button
@@ -142,14 +150,16 @@ export function JourneyMap({ onSelectStage, onBack, completed }: Props) {
                   transform: "translate(-50%, -50%)",
                   background: "none",
                   border: "none",
-                  cursor: "pointer",
+                  cursor: locked ? "default" : "pointer",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   gap: 4,
+                  opacity: locked ? 0.45 : 1,
                   transition: "transform 0.2s",
+                  filter: locked ? "grayscale(0.8)" : "none",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translate(-50%, -50%) scale(1.1)"; }}
+                onMouseEnter={e => { if (!locked) e.currentTarget.style.transform = "translate(-50%, -50%) scale(1.1)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translate(-50%, -50%)"; }}
               >
                 <div style={{
@@ -160,25 +170,23 @@ export function JourneyMap({ onSelectStage, onBack, completed }: Props) {
                       ? "linear-gradient(135deg, #d4a017, #ffd700)"
                       : "linear-gradient(135deg, #8B6914, #d4a017)",
                   border: `3px solid ${
-                    isCompleted ? "#1b6b3e" : isNext ? "#ffd700" : "#b8965c"
+                    locked ? "#999" : isCompleted ? "#1b6b3e" : isNext ? "#ffd700" : "#b8965c"
                   }`,
-                  boxShadow: isNext
-                    ? "0 0 16px rgba(212,175,55,0.6)"
-                    : "0 3px 10px rgba(0,0,0,0.2)",
+                  boxShadow: locked ? "none" : isNext ? "0 0 16px rgba(212,175,55,0.6)" : "0 3px 10px rgba(0,0,0,0.2)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "1.2rem",
                 }}>
-                  {isCompleted ? "✅" : stage.icon}
+                  {isCompleted ? "✅" : locked ? "🔒" : stage.icon}
                 </div>
                 <span style={{
                   fontSize: "0.7rem", fontWeight: 700,
-                  color: "#4a3520", textShadow: "0 1px 2px rgba(255,255,255,0.8)",
+                  color: locked ? "#999" : "#4a3520",
+                  textShadow: locked ? "none" : "0 1px 2px rgba(255,255,255,0.8)",
                   whiteSpace: "nowrap", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis",
-                  background: isNext ? "rgba(255,215,0,0.9)" : "rgba(255,255,255,0.85)",
+                  background: locked ? "rgba(200,200,200,0.5)" : isNext ? "rgba(255,215,0,0.9)" : "rgba(255,255,255,0.85)",
                   padding: "2px 6px", borderRadius: 4,
                 }}>
                   {L(stage.city)}
-                  {isNext && !isCompleted && (lang === "ar" ? " ★" : " ★")}
                 </span>
               </button>
             );
@@ -193,20 +201,23 @@ export function JourneyMap({ onSelectStage, onBack, completed }: Props) {
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             {battutaStages.map((stage, i) => {
               const isCompleted = completed.has(stage.id);
+              const locked = isStageLocked(i);
               const isNext = stage.id === nextStageId;
               return (
                 <button
                   key={stage.id}
                   onClick={() => handleStageClick(stage)}
+                  disabled={locked}
                   style={{
                     display: "flex", alignItems: "center", gap: "0.75rem",
-                    background: isNext && !isCompleted ? "rgba(255,215,0,0.08)" : "var(--card-bg)",
+                    background: locked ? "rgba(200,200,200,0.1)" : isNext && !isCompleted ? "rgba(255,215,0,0.08)" : "var(--card-bg)",
                     border: `2px solid ${
-                      isCompleted ? "var(--green-primary)" : isNext ? "#ffd700" : "var(--border)"
+                      locked ? "#ccc" : isCompleted ? "var(--green-primary)" : isNext ? "#ffd700" : "var(--border)"
                     }`,
                     borderRadius: "var(--radius)",
                     padding: "0.75rem",
-                    cursor: "pointer",
+                    cursor: locked ? "default" : "pointer",
+                    opacity: locked ? 0.55 : 1,
                     transition: "all 0.2s",
                     textAlign: "start",
                     width: "100%",
@@ -214,22 +225,22 @@ export function JourneyMap({ onSelectStage, onBack, completed }: Props) {
                 >
                   <span style={{
                     width: 36, height: 36, borderRadius: "50%",
-                    background: isCompleted ? "var(--green-primary)" : isNext ? "#ffd700" : "var(--border)",
+                    background: locked ? "#ccc" : isCompleted ? "var(--green-primary)" : isNext ? "#ffd700" : "var(--border)",
                     color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: "0.85rem", fontWeight: 700, flexShrink: 0,
                   }}>
-                    {isCompleted ? "✓" : isNext ? "★" : i + 1}
+                    {locked ? "🔒" : isCompleted ? "✓" : isNext ? "★" : i + 1}
                   </span>
                   <div style={{ flex: 1 }}>
-                    <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>
+                    <span style={{ fontWeight: 700, fontSize: "0.95rem", color: locked ? "#999" : "var(--text)" }}>
                       {L(stage.city)}
-                      {isNext && !isCompleted && (lang === "ar" ? " ← التالي" : " ← Next")}
+                      {isNext && !isCompleted && !locked && (lang === "ar" ? " ← التالي" : " ← Next")}
                     </span>
                     <span style={{ fontSize: "0.75rem", color: "var(--text-light)", display: "block" }}>
                       {L(stage.region)}
                     </span>
                   </div>
-                  <span style={{ fontSize: "1.2rem" }}>{stage.icon}</span>
+                  <span style={{ fontSize: "1.2rem" }}>{locked ? "🔒" : stage.icon}</span>
                 </button>
               );
             })}
