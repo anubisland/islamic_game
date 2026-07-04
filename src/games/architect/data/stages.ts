@@ -1,8 +1,6 @@
 import type { TilePiece, TileSlot } from "../components/TilePuzzle";
 import type { PatternRound } from "../components/PatternMatrixPuzzle";
 import type { TransformRound } from "../components/TransformationPuzzle";
-import type { MosaicTileData } from "../components/MosaicPuzzle";
-import type { ArchData } from "../components/ArchOrderPuzzle";
 
 interface BalanceArch {
   id: string;
@@ -19,7 +17,7 @@ export interface ArchitectStage {
   era: string;
   eraIcon: string;
   icon: string;
-  puzzleType?: "symmetry" | "tesselation" | "fill" | "archbalance" | "patternmatrix" | "transform" | "mosaic" | "archorder";
+  puzzleType?: "symmetry" | "tesselation" | "fill" | "archbalance" | "patternmatrix" | "transform" | "ablaq";
   /** symmetry: Left half pattern (rows x halfCols) — 1-indexed color IDs */
   /** fill: Full grid pattern (rows x cols) — 0=empty, >0=prefilled */
   pattern?: number[][];
@@ -41,10 +39,8 @@ export interface ArchitectStage {
   rounds?: PatternRound[];
   /** transform: transformation rounds */
   transformRounds?: TransformRound[];
-  /** archorder: click arches in ascending order by width */
-  archOrderArches?: ArchData[];
-  /** mosaic: edge-matching mosaic tiles */
-  mosaicData?: { gridSize: number; tiles: MosaicTileData[] };
+  /** ablaq: complete alternating stone pattern */
+  ablaqData?: { rows: number; cols: number; fixed: (string | null)[][] };
   /** Info shown after completion */
   info: { title: string; content: string };
 }
@@ -275,52 +271,45 @@ export const architectStages: ArchitectStage[] = [
   // ======== Mamluk (المملوكي) ========
   {
     id: "mamluk-1",
-    title: "فسيفساء السلطان",
-    subtitle: "تطابق الحواف — الزليج المملوكي",
+    title: "جدار الأبلق",
+    subtitle: "أكمل نمط تناوب الأحجار المملوكي",
     era: "العصر المملوكي",
     eraIcon: "🕌",
-    icon: "🔷",
-    puzzleType: "mosaic",
-    palette: ["#C62828", "#D4A02B", "#1565C0"],
-    mosaicData: {
-      gridSize: 3,
-      tiles: [
-        { id: "t0", edges: [0, 1, 2, 0] },
-        { id: "t1", edges: [0, 2, 3, 1] },
-        { id: "t2", edges: [0, 0, 1, 2] },
-        { id: "t3", edges: [2, 3, 1, 0] },
-        { id: "t4", edges: [3, 1, 2, 3] },
-        { id: "t5", edges: [1, 0, 3, 1] },
-        { id: "t6", edges: [1, 2, 0, 0] },
-        { id: "t7", edges: [2, 3, 0, 2] },
-        { id: "t8", edges: [3, 0, 0, 3] },
+    icon: "🧱",
+    puzzleType: "ablaq",
+    palette: ["#C62828", "#D4A02B"],
+    ablaqData: {
+      rows: 3,
+      cols: 6,
+      fixed: [
+        ["#C62828", "#D4A02B", "#C62828", "#D4A02B", "#C62828", "#D4A02B"],
+        [null, "#C62828", null, "#C62828", null, "#D4A02B"],
+        ["#D4A02B", null, "#D4A02B", null, "#D4A02B", null],
       ],
     },
     info: {
-      title: "الزليج المملوكي",
-      content: "الزليج هو فن الفسيفساء الهندسية الذي ازدهر في العصر المملوكي (1250-1517م). استخدم في تزيين المساجد والمدارس والقصور، واشتهرت به دمشق والقاهرة. يتميز الزليج المملوكي بألوانه الزاهية (الأحمر والأزرق والذهبي) وأشكاله الهندسية الدقيقة التي تعكس عمق الفن الإسلامي.",
+      title: "الأبلق — فن المماليك",
+      content: "الأبلق هو أسلوب معماري مملوكي يعتمد على تناوب الأحجار الملونة (الأحمر والذهبي عادةً) في بناء الجدران والأقواس والمآذن. ازدهر هذا الفن في العصر المملوكي (1250-1517م) ولا يزال زينة المساجد والمدارس في القاهرة القديمة حتى اليوم. من أجمل نماذجه مدرسة السلطان حسن ومسجد قلاوون.",
     },
   },
   {
     id: "mamluk-2",
-    title: "أقواس المدرسة",
-    subtitle: "ترتيب الأقواس حسب العرض",
+    title: "زخرفة المملوكي",
+    subtitle: "النمط الهندسي المتكرر",
     era: "العصر المملوكي",
     eraIcon: "🕌",
-    icon: "🏗️",
-    puzzleType: "archorder",
-    palette: ["#C62828", "#D4A02B", "#1565C0", "#2E7D32", "#008080", "#6A1B9A"],
-    archOrderArches: [
-      { id: "a1", width: 1, color: "#D4A02B", order: 1, labelAr: "قوس ضيق ذهبي", labelEn: "Narrow gold arch" },
-      { id: "a2", width: 2, color: "#1565C0", order: 2, labelAr: "قوس أزرق معتدل", labelEn: "Moderate blue arch" },
-      { id: "a3", width: 3, color: "#2E7D32", order: 3, labelAr: "قوس أخضر متوسط", labelEn: "Medium green arch" },
-      { id: "a4", width: 4, color: "#C62828", order: 4, labelAr: "قوس أحمر عريض", labelEn: "Wide red arch" },
-      { id: "a5", width: 5, color: "#008080", order: 5, labelAr: "قوس فيروزي أوسع", labelEn: "Wider teal arch" },
-      { id: "a6", width: 6, color: "#6A1B9A", order: 6, labelAr: "قوس أرجواني عريض جداً", labelEn: "Widest purple arch" },
+    icon: "🔷",
+    puzzleType: "symmetry",
+    gridSize: 6,
+    palette: ["#C62828", "#D4A02B", "#1565C0"],
+    hints: 3,
+    pattern: [
+      [1, 2, 3], [2, 3, 1], [3, 1, 2],
+      [1, 2, 3], [2, 3, 1], [3, 1, 2],
     ],
     info: {
-      title: "المدرسة المملوكية",
-      content: "المدارس المملوكية في القاهرة من أجمل نماذج العمارة الإسلامية، تميزت بأقواسها المتنوعة والأسوار المزخرفة. اشتهر العصر المملوكي ببناء المدارس التي تضم مسجداً ومكتبة وغرفاً للطلاب. من أشهرها مدرسة السلطان حسن ومدرسة قلاوون التي ما زالت شامخة حتى اليوم.",
+      title: "الزخرفة المملوكية الهندسية",
+      content: "تميزت الزخارف المملوكية باستخدام الأنماط الهندسية المتكررة المستوحاة من النجوم والمضلعات. انتشرت في المساجد والمدارس والقصور، خصوصاً في القاهرة التي كانت عاصمة المماليك. من أشهر معالمها مجموعة السلطان حسن ومدرسة وميضأة قلاوون.",
     },
   },
 
