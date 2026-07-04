@@ -107,6 +107,8 @@ export function ArchitectHome({ onSelectPuzzle, onBack, completedPuzzles, puzzle
                   <MatrixMiniPreview />
                 ) : s.puzzleType === "transform" && s.palette ? (
                   <div style={{ fontSize: "1.5rem", lineHeight: "72px" }}>🔄</div>
+                ) : s.puzzleType === "ablaq" && s.palette ? (
+                  <AblaqMiniPreview palette={s.palette} />
                 ) : (
                   <MiniGrid pattern={s.pattern ?? []} palette={s.palette ?? ["#ccc"]} />
                 )}
@@ -197,6 +199,27 @@ function BalanceMiniPreview({ arches }: { arches: { weight: number; color: strin
           <div key={i} style={{ width: 28, background: a.color, borderRadius: "2px 2px 0 0", height: Math.max(8, a.weight * 5), opacity: 0.7 }} />
         ))}
       </div>
+    </div>
+  );
+}
+
+function AblaqMiniPreview({ palette }: { palette: string[] }) {
+  const a = palette[0];
+  const b = palette[1] ?? "#888";
+  return (
+    <div style={{
+      width: 72, height: 72, margin: "0 auto",
+      display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 1,
+      padding: 3, background: "#5D4037", borderRadius: 4,
+    }}>
+      {Array.from({ length: 3 }, (_, r) =>
+        Array.from({ length: 6 }, (_, c) => (
+          <div key={`${r}-${c}`} style={{
+            background: (r + c) % 2 === 0 ? a : b,
+            borderRadius: 1, width: "100%", aspectRatio: "1",
+          }} />
+        ))
+      ).flat()}
     </div>
   );
 }
