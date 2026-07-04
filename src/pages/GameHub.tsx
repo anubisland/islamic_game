@@ -152,6 +152,26 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
             questionsCount={TOTAL_DETECTIVE_STAGES}
             onClick={() => onSelectGame("detective")}
           />
+
+          {/* Coming soon placeholder */}
+          <div
+            style={{
+              background: "var(--card-bg)",
+              borderRadius: "var(--radius)",
+              padding: "1.5rem",
+              border: "2px dashed var(--border)",
+              textAlign: "center",
+              opacity: 0.6,
+            }}
+          >
+            <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🧩</div>
+            <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-light)", marginBottom: "0.25rem" }}>
+              {gh.futureGame}
+            </h3>
+            <p style={{ fontSize: "0.85rem", color: "var(--text-light)" }}>
+              {lang === "ar" ? "لعبة قادمة قريباً..." : "Coming soon..."}
+            </p>
+          </div>
         </div>
       </div>
     </div>
