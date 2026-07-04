@@ -8,6 +8,8 @@ import {
 } from "../data/schema";
 import { EventModal } from "./EventModal";
 import { ZakatScreen } from "./ZakatScreen";
+import { CartoonCharacter } from "./CartoonCharacter";
+import { GoodIcon } from "./GoodIcon";
 
 interface Props {
   lang: "ar" | "en";
@@ -400,8 +402,8 @@ function ShopView({
           background: "var(--card-bg)", borderRadius: "var(--radius)",
           padding: "0.75rem", border: "1px solid var(--border)",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-            <span style={{ fontSize: "1.5rem" }}>{customer.profile.icon}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+            <CartoonCharacter type={customer.profile.id as any} size={52} />
             <div>
               <strong style={{ fontSize: "0.9rem", color: "var(--text)" }}>
                 {t_(customer.profile.name)}
@@ -427,7 +429,7 @@ function ShopView({
                 border: `1px solid ${hasStock ? "rgba(76,175,80,0.2)" : "rgba(244,67,54,0.2)"}`,
                 marginBottom: "0.25rem",
               }}>
-                <span>{good.icon}</span>
+                <GoodIcon goodId={req.goodId} size={24} />
                 <span style={{ flex: 1, fontSize: "0.85rem", color: "var(--text)" }}>
                   {req.qty}x {t_(good.name)}
                   <span style={{ color: "var(--text-light)", fontSize: "0.75rem", marginLeft: "0.25rem" }}>
@@ -481,7 +483,7 @@ function ShopView({
                   background: "rgba(33,150,243,0.06)", border: "1px solid rgba(33,150,243,0.15)",
                   display: "flex", alignItems: "center", gap: "0.3rem",
                 }}>
-                  <span>{good.icon}</span>
+                  <GoodIcon goodId={goodId} size={22} />
                   <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text)" }}>
                     {entry.quantity}
                   </span>
@@ -540,7 +542,7 @@ function CaravanView({
               padding: "0.4rem 0.5rem", borderRadius: 6,
               border: "1px solid var(--border)",
             }}>
-              <span>{good.icon}</span>
+              <GoodIcon goodId={good.id} size={26} />
               <span style={{ flex: 1, fontSize: "0.85rem", color: "var(--text)" }}>
                 {lang === "ar" ? good.name.ar : good.name.en}
               </span>
