@@ -262,12 +262,18 @@ export function getCurrentPrice(good: Good, gameTurn: number, marketFluctuation:
   return { buyPrice, sellPrice };
 }
 
+// === INVENTORY ENTRY WITH COST BASIS ===
+export interface InventoryEntry {
+  quantity: number;
+  avgCost: number; // average purchase price per unit (for profit/zakat calc)
+}
+
 // === PLAYER STATE TYPE ===
 export interface PlayerState {
   gold: number;
   barakah: number;
   shopLevel: number;
-  inventory: Record<string, number>; // goodId -> quantity
+  inventory: Record<string, InventoryEntry>; // goodId -> { quantity, avgCost }
   year: number;
   turn: number;
   totalEarned: number;
@@ -284,4 +290,44 @@ export interface TransactionRecord {
   unitPrice?: number;
   total: number;
   description: LangStr;
+}
+
+// === INVENTORY HELPERS (cost basis tracking) ===
+export function addToInventory(
+  inv: Record<string, InventoryEntry>,
+  goodId: string,
+  quantity: number,
+  unitPrice: number,
+): Record<string, InventoryEntry> {
+  const prev = inv[goodId];
+  if (!prev || prev.quantity === 0) {
+    return { ...inv, [goodId]: { quantity, avgCost: unitPrice } };
+  }
+  const totalCost = prev.avgCost * prev.quantity + unitPrice * quantity;
+  const newQty = prev.quantity + quantity;
+  return { ...inv, [goodId]: { quantity: newQty, avgCost: totalCost / newQty } };
+}
+
+export function removeFromInventory(
+  inv: Record<string, InventoryEntry>,
+  goodId: string,
+  quantity: number,
+): Record<string, InventoryEntry> {
+  const prev = inv[goodId];
+  if (!prev) return inv;
+  const remaining = prev.quantity - quantity;
+  if (remaining <= 0) {
+    const next = { ...inv };
+    delete next[goodId];
+    return next;
+  }
+  return { ...inv, [goodId]: { quantity: remaining, avgCost: prev.avgCost } };
+}
+
+export function totalInventoryValue(inv: Record<string, InventoryEntry>, goods: Good[], getSellPrice: (good: Good) => number): number {
+  return Object.entries(inv).reduce((sum, [goodId, entry]) => {
+    const good = goods.find((g) => g.id === goodId);
+    if (!good) return sum;
+    return sum + entry.quantity * getSellPrice(good);
+  }, 0);
 }
