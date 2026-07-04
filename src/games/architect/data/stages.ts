@@ -1,6 +1,7 @@
 import type { TilePiece, TileSlot } from "../components/TilePuzzle";
 import type { PatternRound } from "../components/PatternMatrixPuzzle";
 import type { TransformRound } from "../components/TransformationPuzzle";
+import type { MosaicTileData } from "../components/MosaicPuzzle";
 
 interface BalanceArch {
   id: string;
@@ -17,7 +18,7 @@ export interface ArchitectStage {
   era: string;
   eraIcon: string;
   icon: string;
-  puzzleType?: "symmetry" | "tesselation" | "fill" | "archbalance" | "patternmatrix" | "transform";
+  puzzleType?: "symmetry" | "tesselation" | "fill" | "archbalance" | "patternmatrix" | "transform" | "mosaic";
   /** symmetry: Left half pattern (rows x halfCols) — 1-indexed color IDs */
   /** fill: Full grid pattern (rows x cols) — 0=empty, >0=prefilled */
   pattern?: number[][];
@@ -39,6 +40,8 @@ export interface ArchitectStage {
   rounds?: PatternRound[];
   /** transform: transformation rounds */
   transformRounds?: TransformRound[];
+  /** mosaic: edge-matching mosaic tiles */
+  mosaicData?: { gridSize: number; tiles: MosaicTileData[] };
   /** Info shown after completion */
   info: { title: string; content: string };
 }
@@ -266,6 +269,36 @@ export const architectStages: ArchitectStage[] = [
     },
   },
 
+  // ======== Mamluk (المملوكي) ========
+  {
+    id: "mamluk-1",
+    title: "فسيفساء السلطان",
+    subtitle: "تطابق الحواف — الزليج المملوكي",
+    era: "العصر المملوكي",
+    eraIcon: "🕌",
+    icon: "🔷",
+    puzzleType: "mosaic",
+    palette: ["#C62828", "#D4A02B", "#1565C0"],
+    mosaicData: {
+      gridSize: 3,
+      tiles: [
+        { id: "t0", edges: [0, 1, 2, 0] },
+        { id: "t1", edges: [0, 2, 3, 1] },
+        { id: "t2", edges: [0, 0, 1, 2] },
+        { id: "t3", edges: [2, 3, 1, 0] },
+        { id: "t4", edges: [3, 1, 2, 3] },
+        { id: "t5", edges: [1, 0, 3, 1] },
+        { id: "t6", edges: [1, 2, 0, 0] },
+        { id: "t7", edges: [2, 3, 0, 2] },
+        { id: "t8", edges: [3, 0, 0, 3] },
+      ],
+    },
+    info: {
+      title: "الزليج المملوكي",
+      content: "الزليج هو فن الفسيفساء الهندسية الذي ازدهر في العصر المملوكي (1250-1517م). استخدم في تزيين المساجد والمدارس والقصور، واشتهرت به دمشق والقاهرة. يتميز الزليج المملوكي بألوانه الزاهية (الأحمر والأزرق والذهبي) وأشكاله الهندسية الدقيقة التي تعكس عمق الفن الإسلامي.",
+    },
+  },
+
   // ======== Andalusia (الأندلس) ========
   {
     id: "andalus-1",
@@ -388,6 +421,7 @@ export const architectStages: ArchitectStage[] = [
 export const ARCHITECT_ERA_ORDER = [
   { key: "umayyad", label: "العصر الأموي", icon: "🏛️" },
   { key: "abbasid", label: "العصر العباسي", icon: "🏺" },
+  { key: "mamluk", label: "العصر المملوكي", icon: "🕌" },
   { key: "andalus", label: "الأندلس", icon: "🌺" },
   { key: "ottoman", label: "العصر العثماني", icon: "🗡️" },
 ];
