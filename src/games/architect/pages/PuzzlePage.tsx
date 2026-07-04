@@ -88,7 +88,7 @@ export function PuzzlePage({ stage, onComplete, onBack }: Props) {
       <TransformationPuzzle
         stage={{
           ...stage,
-          rounds: stage.transformRounds!,
+          transformRounds: stage.transformRounds!,
           palette: stage.palette!,
         }}
         onComplete={onComplete}
