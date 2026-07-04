@@ -46,7 +46,7 @@ function loadState(): PlayerState {
 export function ShopBoard({ lang, onBack }: Props) {
   const [state, setState] = useState<PlayerState>(loadState);
   const [marketFlux, setMarketFlux] = useState(() => Math.random());
-  const [customer, setCustomer] = useState<{ profile: CustomerProfile; requests: { goodId: string; qty: number }[] } | null>(null);
+  const [customer, setCustomer] = useState<{ profile: CustomerProfile; requests: { goodId: string; qty: number }[]; patienceLeft: number } | null>(null);
   const [message, setMessage] = useState<{ text: LangStr; type: "success" | "error" | "info" } | null>(null);
   const [event, setEvent] = useState<MarketEvent | null>(null);
   const [showZakat, setShowZakat] = useState(false);
@@ -67,7 +67,7 @@ export function ShopBoard({ lang, onBack }: Props) {
       const qty = Math.floor(Math.random() * 5) + 1;
       requests.push({ goodId: good.id, qty });
     }
-    setCustomer({ profile, requests });
+    setCustomer({ profile, requests, patienceLeft: profile.patience });
   }, []);
 
   // Initial customer
@@ -171,13 +171,25 @@ export function ShopBoard({ lang, onBack }: Props) {
 
   // Next turn
   function nextTurn() {
+    // Decrease patience, customer leaves if 0
+    setCustomer((prev) => {
+      if (!prev) return prev;
+      if (prev.patienceLeft <= 1) {
+        showMessage(
+          { ar: `${t(prev.profile.name, lang)} غادر السوق لأنك أبطأت!`, en: `${t(prev.profile.name, lang)} left the market, you were too slow!` },
+          "error",
+        );
+        return null;
+      }
+      return { ...prev, patienceLeft: prev.patienceLeft - 1 };
+    });
+
     setState((s) => {
       let newYear = s.year;
       let newTurn = s.turn + 1;
       if (newTurn > 354) {
         newYear = s.year + 1;
         newTurn = 1;
-        // Check zakat
         const invVal = Object.entries(s.inventory).reduce((sum, [goodId, entry]) => {
           const good = GOODS.find((g) => g.id === goodId);
           if (!good || !good.zakatable) return sum;
@@ -186,17 +198,23 @@ export function ShopBoard({ lang, onBack }: Props) {
         const totalWealth = s.gold + invVal;
         if (totalWealth >= NISAB_THRESHOLD) {
           const zakat = Math.round(totalWealth * ZAKAT_RATE);
-          // Will trigger zakat screen
-          setTimeout(() => {
-            setZakatDue(zakat);
-            setShowZakat(true);
-          }, 100);
+          setTimeout(() => { setZakatDue(zakat); setShowZakat(true); }, 100);
         }
       }
       return { ...s, turn: newTurn, year: newYear };
     });
     setMarketFlux(Math.random());
-    spawnCustomer();
+    // Spawn new customer if none
+    setCustomer((prev) => {
+      if (prev) return prev;
+      const profile = CUSTOMERS[Math.floor(Math.random() * CUSTOMERS.length)];
+      const requests: { goodId: string; qty: number }[] = [];
+      for (let i = 0; i < profile.requestCount; i++) {
+        const good = GOODS[Math.floor(Math.random() * GOODS.length)];
+        requests.push({ goodId: good.id, qty: Math.floor(Math.random() * 5) + 1 });
+      }
+      return { profile, requests, patienceLeft: profile.patience };
+    });
     // Random event?
     if (Math.random() < 0.25) {
       const evt = MARKET_EVENTS[Math.floor(Math.random() * MARKET_EVENTS.length)];
@@ -408,7 +426,7 @@ function ResourceBadge({ icon, label, value, color }: { icon: string; label: str
 function ShopView({
   customer, inventory, prices, lang, onSell, onNextTurn,
 }: {
-  customer: { profile: CustomerProfile; requests: { goodId: string; qty: number }[] } | null;
+  customer: { profile: CustomerProfile; requests: { goodId: string; qty: number }[]; patienceLeft: number } | null;
   inventory: Record<string, InventoryEntry>;
   prices: Record<string, { buyPrice: number; sellPrice: number }>;
   lang: "ar" | "en";
@@ -434,7 +452,7 @@ function ShopView({
                 {t_(customer.profile.name)}
               </strong>
               <span style={{ fontSize: "0.8rem", color: "#8B4513", marginLeft: "0.5rem", fontWeight: 600 }}>
-                {lang === "ar" ? `صبر: ${customer.profile.patience}` : `Patience: ${customer.profile.patience}`}
+                {lang === "ar" ? `صبر متبقي: ${customer.patienceLeft}/${customer.profile.patience}` : `Patience left: ${customer.patienceLeft}/${customer.profile.patience}`}
               </span>
             </div>
           </div>
