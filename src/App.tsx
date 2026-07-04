@@ -15,7 +15,6 @@ import type { ArchitectStage } from "./games/architect/data/stages";
 import { JourneyMap } from "./games/battuta/pages/JourneyMap";
 import { CityStage } from "./games/battuta/pages/CityStage";
 import type { BattutaStage } from "./games/battuta/data/stages";
-import { battutaStages } from "./games/battuta/data/stages";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
 import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
@@ -227,13 +226,7 @@ export default function App() {
           const newCompleted = new Set(battutaCompleted);
           newCompleted.add(stageId);
           setBattutaCompleted(newCompleted);
-          const curIdx = battutaStages.findIndex(s => s.id === stageId);
-          const nextIdx = curIdx + 1;
-          if (nextIdx < battutaStages.length) {
-            setScreen({ id: "battuta-stage", stage: battutaStages[nextIdx] });
-          } else {
-            setScreen({ id: "battuta" });
-          }
+          setScreen({ id: "battuta" });
         }}
         onBack={() => setScreen({ id: "battuta" })}
       />
