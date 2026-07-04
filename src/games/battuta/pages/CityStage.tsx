@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "../../../i18n";
 import { type BattutaStage, battutaStages } from "../data/stages";
 import { CityTrivia } from "../components/CityTrivia";
@@ -21,13 +21,6 @@ export function CityStage({ stage, onComplete, onBack }: Props) {
 
   const L = (s: { ar: string; en: string }) => s[lang];
 
-  useEffect(() => {
-    if (result === "correct") {
-      const t = setTimeout(() => onComplete(stage.id), 1500);
-      return () => clearTimeout(t);
-    }
-  }, [result, stage.id, onComplete]);
-
   function handlePuzzleComplete(correct: boolean) {
     setResult(correct ? "correct" : "wrong");
   }
@@ -35,6 +28,10 @@ export function CityStage({ stage, onComplete, onBack }: Props) {
   function handleRetry() {
     setResult(null);
     setPuzzleKey(k => k + 1);
+  }
+
+  function handleContinue() {
+    onComplete(stage.id);
   }
 
   function renderPuzzle() {
@@ -153,11 +150,20 @@ export function CityStage({ stage, onComplete, onBack }: Props) {
                 <p style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--green-primary)" }}>
                   {lang === "ar" ? "إجابة صحيحة! أحسنت" : "Correct Answer! Excellent"}
                 </p>
-                <p style={{ fontSize: "0.85rem", color: "var(--text-light)", marginTop: "0.25rem" }}>
-                  {lang === "ar"
-                    ? currentIndex < total - 1 ? "جاري الانتقال إلى المحطة التالية..." : "لقد أكملت جميع المحطات! العودة إلى الخريطة..."
-                    : currentIndex < total - 1 ? "Moving to the next stop..." : "You completed all stops! Returning to map..."}
-                </p>
+                <button
+                  onClick={handleContinue}
+                  style={{
+                    marginTop: "0.75rem", padding: "0.6rem 2rem",
+                    background: "var(--green-primary)", color: "#fff",
+                    border: "none", borderRadius: 8,
+                    fontSize: "1rem", fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {currentIndex < total - 1
+                    ? (lang === "ar" ? "→ المحطة التالية" : "Next Stop →")
+                    : (lang === "ar" ? "🏁 العودة إلى الخريطة" : "🏁 Return to Map")}
+                </button>
               </div>
             ) : (
               <div style={{
