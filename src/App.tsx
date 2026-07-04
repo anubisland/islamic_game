@@ -18,6 +18,9 @@ import type { BattutaStage } from "./games/battuta/data/stages";
 import { WordSeaHome } from "./games/wordsea/pages/WordSeaHome";
 import { WordStagePage } from "./games/wordsea/pages/WordStage";
 import type { WordStage } from "./games/wordsea/data/stages";
+import { DetectiveHome } from "./games/detective/pages/DetectiveHome";
+import { CaseStage } from "./games/detective/pages/CaseStage";
+import type { DetectiveStage } from "./games/detective/data/stages";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
 import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
@@ -39,7 +42,9 @@ type Screen =
   | { id: "battuta" }
   | { id: "battuta-stage"; stage: BattutaStage }
   | { id: "wordsea" }
-  | { id: "wordsea-stage"; stage: WordStage };
+  | { id: "wordsea-stage"; stage: WordStage }
+  | { id: "detective" }
+  | { id: "detective-stage"; stage: DetectiveStage };
 
 export default function App() {
   const sound = useSound();
@@ -50,6 +55,7 @@ export default function App() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(loadLeaderboard);
   const [battutaCompleted, setBattutaCompleted] = useState<Set<string>>(new Set());
   const [wordseaCompleted, setWordseaCompleted] = useState<Set<string>>(new Set());
+  const [detectiveCompleted, setDetectiveCompleted] = useState<Set<string>>(new Set());
 
   function handleReset() {
     reset();
@@ -264,6 +270,32 @@ export default function App() {
     );
   }
 
+  if (screen.id === "detective") {
+    return (
+      <DetectiveHome
+        onSelectStage={(stage) => setScreen({ id: "detective-stage", stage })}
+        onBack={() => setScreen({ id: "hub" })}
+        completed={detectiveCompleted}
+        lang={lang}
+      />
+    );
+  }
+
+  if (screen.id === "detective-stage") {
+    return (
+      <CaseStage
+        stage={screen.stage}
+        lang={lang}
+        onComplete={() => {
+          const newCompleted = new Set(detectiveCompleted);
+          newCompleted.add(screen.stage.id);
+          setDetectiveCompleted(newCompleted);
+          setScreen({ id: "detective" });
+        }}
+      />
+    );
+  }
+
   if (screen.id === "daily") {
     const today = getDailyChallengeDate();
     const dailyTitle = lang === "ar"
@@ -299,6 +331,7 @@ export default function App() {
         if (gameId === "architect") setScreen({ id: "architect" });
         if (gameId === "battuta") setScreen({ id: "battuta" });
         if (gameId === "wordsea") setScreen({ id: "wordsea" });
+        if (gameId === "detective") setScreen({ id: "detective" });
       }}
       soundEnabled={sound.enabled}
       onToggleSound={() => sound.setEnabled(!sound.enabled)}

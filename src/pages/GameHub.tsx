@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "../i18n";
+import { TOTAL_DETECTIVE_STAGES } from "../games/detective/data/stages";
 
 interface Props {
   onSelectGame: (gameId: string) => void;
@@ -137,6 +138,19 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
             stagesCount={8}
             questionsCount={8}
             onClick={() => onSelectGame("wordsea")}
+          />
+
+          {/* Detective Game */}
+          <GameCard
+            icon="🔍"
+            title={lang === "ar" ? "المحقق التاريخي" : "Historical Detective"}
+            subtitle={lang === "ar" ? "حل الألغاز التاريخية واكتشف الحقيقة" : "Solve historical mysteries and discover the truth"}
+            desc={lang === "ar"
+              ? "ارتدِ عباءة المحقق وابحث في أعظم ألغاز التاريخ الإسلامي. رتب الأحداث التاريخية، حدد الإجابات الصحيحة، واكتشف الحقيقة المخبأة وراء كل قضية."
+              : "Put on the detective's cloak and investigate the greatest mysteries of Islamic history. Arrange historical events, identify correct answers, and uncover the truth hidden behind each case."}
+            stagesCount={TOTAL_DETECTIVE_STAGES}
+            questionsCount={TOTAL_DETECTIVE_STAGES}
+            onClick={() => onSelectGame("detective")}
           />
         </div>
       </div>
