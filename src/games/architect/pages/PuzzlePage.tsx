@@ -8,6 +8,7 @@ import { ArchBalancePuzzle } from "../components/ArchBalancePuzzle";
 import { PatternMatrixPuzzle } from "../components/PatternMatrixPuzzle";
 import { TransformationPuzzle } from "../components/TransformationPuzzle";
 import { MosaicPuzzle } from "../components/MosaicPuzzle";
+import { ArchOrderPuzzle } from "../components/ArchOrderPuzzle";
 
 interface Props {
   stage: ArchitectStage;
@@ -90,6 +91,20 @@ export function PuzzlePage({ stage, onComplete, onBack }: Props) {
         stage={{
           ...stage,
           transformRounds: stage.transformRounds!,
+          palette: stage.palette!,
+        }}
+        onComplete={onComplete}
+        onBack={onBack}
+      />
+    );
+  }
+
+  if (stage.puzzleType === "archorder") {
+    return (
+      <ArchOrderPuzzle
+        stage={{
+          ...stage,
+          arches: stage.archOrderArches!,
           palette: stage.palette!,
         }}
         onComplete={onComplete}

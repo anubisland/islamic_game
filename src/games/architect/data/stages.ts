@@ -2,6 +2,7 @@ import type { TilePiece, TileSlot } from "../components/TilePuzzle";
 import type { PatternRound } from "../components/PatternMatrixPuzzle";
 import type { TransformRound } from "../components/TransformationPuzzle";
 import type { MosaicTileData } from "../components/MosaicPuzzle";
+import type { ArchData } from "../components/ArchOrderPuzzle";
 
 interface BalanceArch {
   id: string;
@@ -18,7 +19,7 @@ export interface ArchitectStage {
   era: string;
   eraIcon: string;
   icon: string;
-  puzzleType?: "symmetry" | "tesselation" | "fill" | "archbalance" | "patternmatrix" | "transform" | "mosaic";
+  puzzleType?: "symmetry" | "tesselation" | "fill" | "archbalance" | "patternmatrix" | "transform" | "mosaic" | "archorder";
   /** symmetry: Left half pattern (rows x halfCols) — 1-indexed color IDs */
   /** fill: Full grid pattern (rows x cols) — 0=empty, >0=prefilled */
   pattern?: number[][];
@@ -40,6 +41,8 @@ export interface ArchitectStage {
   rounds?: PatternRound[];
   /** transform: transformation rounds */
   transformRounds?: TransformRound[];
+  /** archorder: click arches in ascending order by width */
+  archOrderArches?: ArchData[];
   /** mosaic: edge-matching mosaic tiles */
   mosaicData?: { gridSize: number; tiles: MosaicTileData[] };
   /** Info shown after completion */
@@ -296,6 +299,28 @@ export const architectStages: ArchitectStage[] = [
     info: {
       title: "الزليج المملوكي",
       content: "الزليج هو فن الفسيفساء الهندسية الذي ازدهر في العصر المملوكي (1250-1517م). استخدم في تزيين المساجد والمدارس والقصور، واشتهرت به دمشق والقاهرة. يتميز الزليج المملوكي بألوانه الزاهية (الأحمر والأزرق والذهبي) وأشكاله الهندسية الدقيقة التي تعكس عمق الفن الإسلامي.",
+    },
+  },
+  {
+    id: "mamluk-2",
+    title: "أقواس المدرسة",
+    subtitle: "ترتيب الأقواس حسب العرض",
+    era: "العصر المملوكي",
+    eraIcon: "🕌",
+    icon: "🏗️",
+    puzzleType: "archorder",
+    palette: ["#C62828", "#D4A02B", "#1565C0", "#2E7D32", "#008080", "#6A1B9A"],
+    archOrderArches: [
+      { id: "a1", width: 1, color: "#D4A02B", order: 1, labelAr: "قوس ضيق ذهبي", labelEn: "Narrow gold arch" },
+      { id: "a2", width: 2, color: "#1565C0", order: 2, labelAr: "قوس أزرق معتدل", labelEn: "Moderate blue arch" },
+      { id: "a3", width: 3, color: "#2E7D32", order: 3, labelAr: "قوس أخضر متوسط", labelEn: "Medium green arch" },
+      { id: "a4", width: 4, color: "#C62828", order: 4, labelAr: "قوس أحمر عريض", labelEn: "Wide red arch" },
+      { id: "a5", width: 5, color: "#008080", order: 5, labelAr: "قوس فيروزي أوسع", labelEn: "Wider teal arch" },
+      { id: "a6", width: 6, color: "#6A1B9A", order: 6, labelAr: "قوس أرجواني عريض جداً", labelEn: "Widest purple arch" },
+    ],
+    info: {
+      title: "المدرسة المملوكية",
+      content: "المدارس المملوكية في القاهرة من أجمل نماذج العمارة الإسلامية، تميزت بأقواسها المتنوعة والأسوار المزخرفة. اشتهر العصر المملوكي ببناء المدارس التي تضم مسجداً ومكتبة وغرفاً للطلاب. من أشهرها مدرسة السلطان حسن ومدرسة قلاوون التي ما زالت شامخة حتى اليوم.",
     },
   },
 
