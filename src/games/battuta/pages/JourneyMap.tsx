@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "../../../i18n";
 import { battutaStages, type BattutaStage } from "../data/stages";
 
@@ -8,6 +9,7 @@ interface Props {
 
 export function JourneyMap({ onSelectStage, onBack }: Props) {
   const { lang, dir } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
 
   function handleStageClick(stage: BattutaStage) {
     onSelectStage(stage);
@@ -32,11 +34,64 @@ export function JourneyMap({ onSelectStage, onBack }: Props) {
       <div style={{
         maxWidth: 600, margin: "0 auto", padding: "1rem 0.75rem",
       }}>
-        <p style={{ textAlign: "center", color: "var(--text-light)", fontSize: "0.9rem", marginBottom: "1.5rem", lineHeight: 1.7 }}>
-          {lang === "ar"
-            ? "سافر مع ابن بطوطة عبر العالم الإسلامي! حل الألغاز لتتقدم في الرحلة."
-            : "Travel with Ibn Battuta across the Islamic world! Solve puzzles to advance on your journey."}
-        </p>
+        {/* Journey intro card */}
+        <div
+          className="animate-fade-in-up"
+          style={{
+            background: "linear-gradient(135deg, #8B6914, #b8860b)",
+            color: "#fff",
+            borderRadius: "var(--radius)",
+            padding: "1.25rem",
+            marginBottom: "1.5rem",
+            boxShadow: "0 6px 24px rgba(139,105,20,0.3)",
+          }}
+        >
+          <div style={{ fontSize: "2rem", marginBottom: "0.5rem", textAlign: "center" }}>🧭</div>
+          <h2 style={{ fontSize: "1.15rem", fontWeight: 800, marginBottom: "0.5rem", textAlign: "center" }}>
+            {lang === "ar" ? "رحلة ابن بطوطة" : "Ibn Battuta's Journey"}
+          </h2>
+          <p style={{ lineHeight: 1.8, fontSize: "0.88rem", opacity: 0.95, marginBottom: "0.75rem" }}>
+            {lang === "ar"
+              ? "انطلق مع أعظم رحالة في التاريخ الإسلامي! محمد بن عبد الله بن بطوطة (1304–1369م) غادر طنجة سنة 1325م في رحلة استمرت 30 عاماً، قطع خلالها أكثر من 120 ألف كيلومتر وزار أكثر من 40 دولة من المغرب إلى الصين. حل الألغاز في كل محطة لتتقدم في الرحلة وتتعرف على الحضارة الإسلامية في مختلف بقاع العالم."
+              : "Journey with the greatest traveler in Islamic history! Muhammad ibn Battuta (1304–1369 CE) left Tangier in 1325 CE on a 30-year journey, covering over 120,000 km and visiting more than 40 countries from Morocco to China. Solve puzzles at each stop to advance and discover Islamic civilization worldwide."}
+          </p>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              color: "#fff",
+              border: "1px solid rgba(255,255,255,0.25)",
+              padding: "0.4rem 1rem",
+              borderRadius: 8,
+              fontSize: "0.82rem",
+              fontWeight: 600,
+              width: "100%",
+            }}
+          >
+            {expanded ? "▲" : "▼"} {expanded
+              ? (lang === "ar" ? "إخفاء" : "Hide")
+              : (lang === "ar" ? "اقرأ المزيد عن الرحلة" : "Read more about the journey")}
+          </button>
+          {expanded && (
+            <div className="animate-slide-down" style={{ marginTop: "0.75rem" }}>
+              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {[
+                  lang === "ar" ? "بدأت الرحلة عام 1325م عندما غادر ابن بطوطة طنجة متجهاً إلى مكة للحج" : "The journey began in 1325 CE when Ibn Battuta left Tangier heading to Mecca for Hajj",
+                  lang === "ar" ? "استغرقت الرحلة 30 عاماً (1325–1354م)" : "The journey lasted 30 years (1325–1354 CE)",
+                  lang === "ar" ? "زار أكثر من 40 دولة في أفريقيا، الشرق الأوسط، آسيا الوسطى، الهند، الصين، والأندلس" : "He visited over 40 countries across Africa, the Middle East, Central Asia, India, China, and Andalusia",
+                  lang === "ar" ? "قطع مسافة تزيد عن 120,000 كم — تعادل 3 أضعاف محيط الأرض" : "He traveled over 120,000 km — three times the Earth's circumference",
+                  lang === "ar" ? "أملى رحلته الشهيرة 'تحفة النظار في غرائب الأمصار' على ابن جزي الكلبي" : "He dictated his famous travelogue 'Rihla' to Ibn Juzayy al-Kalbi",
+                  lang === "ar" ? "كان عمره 21 عاماً فقط عندما بدأ الرحلة و 51 عاماً عند العودة" : "He was only 21 when he started the journey and 51 upon his return",
+                ].map((feat, i) => (
+                  <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem" }}>
+                    <span style={{ fontSize: "1rem" }}>🌍</span>
+                    <span>{feat}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
 
         {/* Map area */}
         <div style={{
