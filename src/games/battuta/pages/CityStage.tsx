@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "../../../i18n";
 import { type BattutaStage, battutaStages } from "../data/stages";
 import { CityTrivia } from "../components/CityTrivia";
@@ -8,7 +8,7 @@ import { Timeline } from "../components/Timeline";
 
 interface Props {
   stage: BattutaStage;
-  onComplete: (stageId: string, correct: boolean) => void;
+  onComplete: (stageId: string) => void;
   onBack: () => void;
 }
 
@@ -21,6 +21,13 @@ export function CityStage({ stage, onComplete, onBack }: Props) {
 
   const L = (s: { ar: string; en: string }) => s[lang];
 
+  useEffect(() => {
+    if (result === "correct") {
+      const t = setTimeout(() => onComplete(stage.id), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [result, stage.id, onComplete]);
+
   function handlePuzzleComplete(correct: boolean) {
     setResult(correct ? "correct" : "wrong");
   }
@@ -28,12 +35,6 @@ export function CityStage({ stage, onComplete, onBack }: Props) {
   function handleRetry() {
     setResult(null);
     setPuzzleKey(k => k + 1);
-  }
-
-  function handleContinue() {
-    if (result === "correct") {
-      onComplete(stage.id, true);
-    }
   }
 
   function renderPuzzle() {
@@ -144,7 +145,7 @@ export function CityStage({ stage, onComplete, onBack }: Props) {
         {result && (
           <div className="animate-fade-in-up">
             {result === "correct" ? (
-              <div style={{
+              <div className="animate-fade-in-up" style={{
                 background: "rgba(27,107,62,0.1)", border: "2px solid var(--green-primary)",
                 borderRadius: "var(--radius)", padding: "1rem", textAlign: "center",
               }}>
@@ -153,19 +154,10 @@ export function CityStage({ stage, onComplete, onBack }: Props) {
                   {lang === "ar" ? "إجابة صحيحة! أحسنت" : "Correct Answer! Excellent"}
                 </p>
                 <p style={{ fontSize: "0.85rem", color: "var(--text-light)", marginTop: "0.25rem" }}>
-                  {lang === "ar" ? "يمكنك الآن التقدم إلى المحطة التالية" : "You can now proceed to the next stop"}
+                  {lang === "ar"
+                    ? currentIndex < total - 1 ? "جاري الانتقال إلى المحطة التالية..." : "لقد أكملت جميع المحطات! العودة إلى الخريطة..."
+                    : currentIndex < total - 1 ? "Moving to the next stop..." : "You completed all stops! Returning to map..."}
                 </p>
-                <button
-                  onClick={handleContinue}
-                  style={{
-                    marginTop: "0.75rem", padding: "0.6rem 2rem",
-                    background: "var(--green-primary)", color: "#fff",
-                    border: "none", borderRadius: 8,
-                    fontSize: "1rem", fontWeight: 700,
-                  }}
-                >
-                  {lang === "ar" ? "→ المحطة التالية" : "Next Stop →"}
-                </button>
               </div>
             ) : (
               <div style={{

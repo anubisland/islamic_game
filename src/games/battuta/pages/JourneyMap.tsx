@@ -5,11 +5,13 @@ import { battutaStages, type BattutaStage } from "../data/stages";
 interface Props {
   onSelectStage: (stage: BattutaStage) => void;
   onBack: () => void;
+  completed: Set<string>;
 }
 
-export function JourneyMap({ onSelectStage, onBack }: Props) {
+export function JourneyMap({ onSelectStage, onBack, completed }: Props) {
   const { lang, dir } = useTranslation();
   const [expanded, setExpanded] = useState(false);
+  const nextStageId = battutaStages.find(s => !completed.has(s.id))?.id ?? battutaStages[battutaStages.length - 1].id;
 
   function handleStageClick(stage: BattutaStage) {
     onSelectStage(stage);
@@ -126,9 +128,9 @@ export function JourneyMap({ onSelectStage, onBack }: Props) {
           </svg>
 
           {/* City markers */}
-          {battutaStages.map((stage, i) => {
-            const isCompleted = false;
-            const isFirst = i === 0;
+          {battutaStages.map((stage) => {
+            const isCompleted = completed.has(stage.id);
+            const isNext = stage.id === nextStageId;
             return (
               <button
                 key={stage.id}
@@ -154,11 +156,15 @@ export function JourneyMap({ onSelectStage, onBack }: Props) {
                   width: 44, height: 44, borderRadius: "50%",
                   background: isCompleted
                     ? "linear-gradient(135deg, #1b6b3e, #2e8b57)"
-                    : isFirst
-                      ? "linear-gradient(135deg, #c0392b, #e74c3c)"
+                    : isNext
+                      ? "linear-gradient(135deg, #d4a017, #ffd700)"
                       : "linear-gradient(135deg, #8B6914, #d4a017)",
-                  border: `3px solid ${isCompleted ? "#1b6b3e" : isFirst ? "#c0392b" : "#b8965c"}`,
-                  boxShadow: "0 3px 10px rgba(0,0,0,0.2)",
+                  border: `3px solid ${
+                    isCompleted ? "#1b6b3e" : isNext ? "#ffd700" : "#b8965c"
+                  }`,
+                  boxShadow: isNext
+                    ? "0 0 16px rgba(212,175,55,0.6)"
+                    : "0 3px 10px rgba(0,0,0,0.2)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "1.2rem",
                 }}>
@@ -168,10 +174,11 @@ export function JourneyMap({ onSelectStage, onBack }: Props) {
                   fontSize: "0.7rem", fontWeight: 700,
                   color: "#4a3520", textShadow: "0 1px 2px rgba(255,255,255,0.8)",
                   whiteSpace: "nowrap", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis",
-                  background: "rgba(255,255,255,0.85)",
+                  background: isNext ? "rgba(255,215,0,0.9)" : "rgba(255,255,255,0.85)",
                   padding: "2px 6px", borderRadius: 4,
                 }}>
                   {L(stage.city)}
+                  {isNext && !isCompleted && (lang === "ar" ? " ★" : " ★")}
                 </span>
               </button>
             );
@@ -185,15 +192,18 @@ export function JourneyMap({ onSelectStage, onBack }: Props) {
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             {battutaStages.map((stage, i) => {
-              const isCompleted = false;
+              const isCompleted = completed.has(stage.id);
+              const isNext = stage.id === nextStageId;
               return (
                 <button
                   key={stage.id}
                   onClick={() => handleStageClick(stage)}
                   style={{
                     display: "flex", alignItems: "center", gap: "0.75rem",
-                    background: "var(--card-bg)",
-                    border: `2px solid ${isCompleted ? "var(--green-primary)" : "var(--border)"}`,
+                    background: isNext && !isCompleted ? "rgba(255,215,0,0.08)" : "var(--card-bg)",
+                    border: `2px solid ${
+                      isCompleted ? "var(--green-primary)" : isNext ? "#ffd700" : "var(--border)"
+                    }`,
                     borderRadius: "var(--radius)",
                     padding: "0.75rem",
                     cursor: "pointer",
@@ -204,15 +214,16 @@ export function JourneyMap({ onSelectStage, onBack }: Props) {
                 >
                   <span style={{
                     width: 36, height: 36, borderRadius: "50%",
-                    background: isCompleted ? "var(--green-primary)" : "var(--border)",
+                    background: isCompleted ? "var(--green-primary)" : isNext ? "#ffd700" : "var(--border)",
                     color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: "0.85rem", fontWeight: 700, flexShrink: 0,
                   }}>
-                    {isCompleted ? "✓" : i + 1}
+                    {isCompleted ? "✓" : isNext ? "★" : i + 1}
                   </span>
                   <div style={{ flex: 1 }}>
                     <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>
                       {L(stage.city)}
+                      {isNext && !isCompleted && (lang === "ar" ? " ← التالي" : " ← Next")}
                     </span>
                     <span style={{ fontSize: "0.75rem", color: "var(--text-light)", display: "block" }}>
                       {L(stage.region)}

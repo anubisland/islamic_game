@@ -15,6 +15,7 @@ import type { ArchitectStage } from "./games/architect/data/stages";
 import { JourneyMap } from "./games/battuta/pages/JourneyMap";
 import { CityStage } from "./games/battuta/pages/CityStage";
 import type { BattutaStage } from "./games/battuta/data/stages";
+import { battutaStages } from "./games/battuta/data/stages";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
 import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
@@ -43,6 +44,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>({ id: "hub" });
   const [dailyDate, setDailyDate] = useState(() => localStorage.getItem("daily-challenge-date") ?? "");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(loadLeaderboard);
+  const [battutaCompleted, setBattutaCompleted] = useState<Set<string>>(new Set());
 
   function handleReset() {
     reset();
@@ -212,6 +214,7 @@ export default function App() {
       <JourneyMap
         onSelectStage={(stage) => setScreen({ id: "battuta-stage", stage })}
         onBack={() => setScreen({ id: "hub" })}
+        completed={battutaCompleted}
       />
     );
   }
@@ -220,8 +223,17 @@ export default function App() {
     return (
       <CityStage
         stage={screen.stage}
-        onComplete={(_stageId) => {
-          setScreen({ id: "battuta" });
+        onComplete={(stageId) => {
+          const newCompleted = new Set(battutaCompleted);
+          newCompleted.add(stageId);
+          setBattutaCompleted(newCompleted);
+          const curIdx = battutaStages.findIndex(s => s.id === stageId);
+          const nextIdx = curIdx + 1;
+          if (nextIdx < battutaStages.length) {
+            setScreen({ id: "battuta-stage", stage: battutaStages[nextIdx] });
+          } else {
+            setScreen({ id: "battuta" });
+          }
         }}
         onBack={() => setScreen({ id: "battuta" })}
       />
