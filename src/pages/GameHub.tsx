@@ -113,26 +113,18 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
             onClick={() => onSelectGame("architect")}
           />
 
-          {/* Future game placeholder */}
-          <div
-            className="animate-fade-in-up"
-            style={{
-              background: "var(--card-bg)",
-              borderRadius: "var(--radius)",
-              padding: "1.5rem",
-              border: "2px dashed var(--border)",
-              textAlign: "center",
-              opacity: 0.7,
-            }}
-          >
-            <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🧩</div>
-            <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-light)", marginBottom: "0.25rem" }}>
-              {gh.futureGame}
-            </h3>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-light)" }}>
-              {lang === "ar" ? "ألعاب قادمة قريباً..." : "More games coming soon..."}
-            </p>
-          </div>
+          {/* Ibn Battuta Game */}
+          <GameCard
+            icon="🧭"
+            title={lang === "ar" ? "رحلة ابن بطوطة" : "Ibn Battuta's Journey"}
+            subtitle={lang === "ar" ? "مغامرات وألغاز جغرافية عبر العالم الإسلامي" : "Geography puzzles and adventure across the Islamic world"}
+            desc={lang === "ar"
+              ? "سافر مع ابن بطوطة في رحلته الشهيرة التي استمرت 30 عاماً. حل الألغاز المنطقية والتاريخية والرياضية لتتقدم من مدينة إلى أخرى، وتعرف على الحضارة الإسلامية في مختلف بقاع العالم."
+              : "Travel with Ibn Battuta on his famous 30-year journey. Solve logic, history, and math puzzles to advance from city to city, discovering Islamic civilization across the world."}
+            stagesCount={10}
+            questionsCount={10}
+            onClick={() => onSelectGame("battuta")}
+          />
         </div>
       </div>
     </div>

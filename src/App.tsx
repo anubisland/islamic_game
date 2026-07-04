@@ -12,6 +12,9 @@ import { GameHub } from "./pages/GameHub";
 import { ArchitectHome } from "./games/architect/pages/ArchitectHome";
 import { PuzzlePage } from "./games/architect/pages/PuzzlePage";
 import type { ArchitectStage } from "./games/architect/data/stages";
+import { JourneyMap } from "./games/battuta/pages/JourneyMap";
+import { CityStage } from "./games/battuta/pages/CityStage";
+import type { BattutaStage } from "./games/battuta/data/stages";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
 import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
@@ -29,7 +32,9 @@ type Screen =
   | { id: "flashcard"; index: number }
   | { id: "daily" }
   | { id: "architect" }
-  | { id: "architect-puzzle"; stage: ArchitectStage };
+  | { id: "architect-puzzle"; stage: ArchitectStage }
+  | { id: "battuta" }
+  | { id: "battuta-stage"; stage: BattutaStage };
 
 export default function App() {
   const sound = useSound();
@@ -202,6 +207,27 @@ export default function App() {
     );
   }
 
+  if (screen.id === "battuta") {
+    return (
+      <JourneyMap
+        onSelectStage={(stage) => setScreen({ id: "battuta-stage", stage })}
+        onBack={() => setScreen({ id: "hub" })}
+      />
+    );
+  }
+
+  if (screen.id === "battuta-stage") {
+    return (
+      <CityStage
+        stage={screen.stage}
+        onComplete={(_stageId) => {
+          setScreen({ id: "battuta" });
+        }}
+        onBack={() => setScreen({ id: "battuta" })}
+      />
+    );
+  }
+
   if (screen.id === "daily") {
     const today = getDailyChallengeDate();
     const dailyTitle = lang === "ar"
@@ -235,6 +261,7 @@ export default function App() {
       onSelectGame={(gameId) => {
         if (gameId === "faith-journey") setScreen({ id: "home" });
         if (gameId === "architect") setScreen({ id: "architect" });
+        if (gameId === "battuta") setScreen({ id: "battuta" });
       }}
       soundEnabled={sound.enabled}
       onToggleSound={() => sound.setEnabled(!sound.enabled)}
