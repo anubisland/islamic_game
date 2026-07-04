@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type CSSProperties } from "react";
+import { useState, useRef, useEffect, useMemo, type CSSProperties } from "react";
 import { useTranslation } from "../../../i18n";
 import { useSound } from "../../../hooks/useSound";
 
@@ -37,6 +37,15 @@ export function AblaqPuzzle({ stage, onComplete, onBack }: Props) {
 
   const { rows, cols, fixed } = stage.ablaqData;
 
+  // Full solved pattern (checkerboard: palette[0] at even r+c, palette[1] at odd r+c)
+  const solved = useMemo(() =>
+    Array.from({ length: rows }, (_, r) =>
+      Array.from({ length: cols }, (_, c) =>
+        (r + c) % 2 === 0 ? stage.palette[0] : stage.palette[1]
+      )
+    ),
+  [rows, cols, stage.palette]);
+
   const [grid, setGrid] = useState<(string | null)[][]>(() =>
     fixed.map(row => [...row])
   );
@@ -49,18 +58,13 @@ export function AblaqPuzzle({ stage, onComplete, onBack }: Props) {
   const [time, setTime] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Initialize pool: for each null in fixed, compute correct alternating color
+  // Build pool from checkerboard (gap color = solved[r][c])
   useEffect(() => {
     const colors: string[] = [];
     for (let r = 0; r < rows; r++)
       for (let c = 0; c < cols; c++)
-        if (fixed[r][c] === null) {
-          const left = c > 0 ? grid[r][c - 1] ?? "" : "";
-          const above = r > 0 ? grid[r - 1][c] ?? "" : "";
-          const hint = left || above;
-          const correct = hint ? stage.palette.find(p => p !== hint) ?? stage.palette[0] : stage.palette[0];
-          colors.push(correct);
-        }
+        if (fixed[r][c] === null)
+          colors.push(solved[r][c]);
     setPool(shuffle(colors));
   }, []);
 
@@ -115,28 +119,19 @@ export function AblaqPuzzle({ stage, onComplete, onBack }: Props) {
     setFeedback(null);
   }
 
-  function checkAllFilled(): boolean {
+  function checkComplete(): boolean {
     for (let r = 0; r < rows; r++)
       for (let c = 0; c < cols; c++)
-        if (grid[r][c] === null) return false;
-    return true;
-  }
-
-  function isAlternatingCorrect(): boolean {
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const val = grid[r][c];
-        if (val === null) return false;
-        if (c > 0 && grid[r][c - 1] !== null && grid[r][c - 1] === val) return false;
-        if (r > 0 && grid[r - 1][c] !== null && grid[r - 1][c] === val) return false;
-      }
-    }
+        if (grid[r][c] === null || grid[r][c] !== solved[r][c]) return false;
     return true;
   }
 
   function handleCheck() {
     if (completed || showInfo) return;
-    if (!checkAllFilled()) {
+    const allFilled = grid.every(row =>
+      row.every(cell => cell !== null)
+    );
+    if (!allFilled) {
       setFeedback({
         msg: lang === "ar" ? "ضع كل الأحجار أولاً" : "Place all stones first",
         type: "wrong",
@@ -144,7 +139,7 @@ export function AblaqPuzzle({ stage, onComplete, onBack }: Props) {
       setTimeout(() => setFeedback(null), 1500);
       return;
     }
-    if (isAlternatingCorrect()) {
+    if (checkComplete()) {
       sound.click();
       if (timerRef.current) clearInterval(timerRef.current);
       setCompleted(true);
@@ -158,14 +153,15 @@ export function AblaqPuzzle({ stage, onComplete, onBack }: Props) {
       sound.wrong();
       setMistakes(m => m + 1);
       setFeedback({
-        msg: lang === "ar" ? "❌ الألوان غير متناوبة بشكل صحيح. تأكد من تناوب الألوان في كل صف" : "❌ Colors don't alternate correctly. Check each row alternates",
+        msg: lang === "ar" ? "❌ التوزيع غير صحيح. قارن مع النموذج المصغر" : "❌ Wrong placement. Compare with the mini model",
         type: "wrong",
       });
       setTimeout(() => setFeedback(null), 2500);
     }
   }
 
-  const CELL = rows > 2 ? 32 : 40;
+  const REF = 14;
+  const CELL = rows > 2 ? 34 : 40;
 
   return (
     <div>
@@ -183,8 +179,8 @@ export function AblaqPuzzle({ stage, onComplete, onBack }: Props) {
         </h2>
         <p style={{ fontSize: "0.78rem", color: "var(--text-light)", marginBottom: "0.25rem" }}>
           {lang === "ar"
-            ? "أكمل نمط الأبلق — الألوان تتناوب في كل صف. ضع الحجر المناسب في كل فراغ"
-            : "Complete the ablaq pattern — colors alternate in each row and column"}
+            ? "أكمل جدار الأبلق — الألوان تتناوب مثل رقعة الشطرنج. اختر لوناً ثم ضعه في الفراغ"
+            : "Complete the ablaq wall — colors alternate like a checkerboard"}
         </p>
 
         <div style={{ display: "flex", justifyContent: "center", gap: "1rem", fontSize: "0.78rem", marginBottom: "0.25rem" }}>
@@ -198,41 +194,62 @@ export function AblaqPuzzle({ stage, onComplete, onBack }: Props) {
           </div>
         </div>
 
-        {/* Wall */}
-        <div style={{ display: "inline-block", padding: 8, background: "#5D4037", borderRadius: 6, border: "2px solid #3E2723", marginBottom: "0.5rem", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.2)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, ${CELL}px)`, gap: 1 }}>
-            {grid.flatMap((row, r) =>
-              row.map((cell, c) => {
-                const isFixed = fixed[r][c] !== null;
-                const isEmpty = cell === null;
-                return (
-                  <div
-                    key={`${r}-${c}`}
-                    onClick={() => handleSlotClick(r, c)}
-                    style={{
-                      width: CELL,
-                      height: CELL,
-                      background: isEmpty ? "rgba(255,255,255,0.08)" : cell,
-                      border: isEmpty
-                        ? "2px dashed rgba(255,255,255,0.3)"
-                        : isFixed
-                        ? "2px solid rgba(255,255,255,0.5)"
-                        : "2px solid transparent",
-                      cursor: isFixed ? "default" : "pointer",
-                      transition: "all 0.15s",
-                      boxSizing: "border-box",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: isEmpty ? (selectedColor ? "0" : "0.8rem") : "0",
-                      color: "rgba(255,255,255,0.5)",
-                    }}
-                  >
-                    {isEmpty && !selectedColor ? "?" : ""}
-                  </div>
-                );
-              })
-            )}
+        {/* Reference model */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 16, alignItems: "center", marginBottom: "0.4rem" }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: "0.6rem", color: "var(--text-light)", marginBottom: "0.15rem" }}>
+              {lang === "ar" ? "النموذج المطلوب" : "Target"}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, ${REF}px)`, gap: 1, padding: 3, background: "#5D4037", borderRadius: 4, border: "1px solid #3E2723" }}>
+              {solved.flat().map((color, i) => (
+                <div key={i} style={{ width: REF, height: REF, background: color, borderRadius: 1 }} />
+              ))}
+            </div>
+          </div>
+          <div style={{ fontSize: "1.2rem", color: "var(--text-light)" }}>→</div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: "0.6rem", color: "var(--text-light)", marginBottom: "0.15rem" }}>
+              {lang === "ar" ? "الجدار الذي تبنيه" : "Your wall"}
+            </div>
+            <div style={{ display: "inline-block", padding: 3, background: "#5D4037", borderRadius: 4, border: "2px solid #3E2723" }}>
+              <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, ${CELL}px)`, gap: 1 }}>
+                {grid.flatMap((row, r) =>
+                  row.map((cell, c) => {
+                    const isFixed = fixed[r][c] !== null;
+                    const isEmpty = cell === null;
+                    const correct = cell !== null && solved[r][c] === cell;
+                    return (
+                      <div
+                        key={`${r}-${c}`}
+                        onClick={() => handleSlotClick(r, c)}
+                        style={{
+                          width: CELL,
+                          height: CELL,
+                          background: isEmpty ? "rgba(255,255,255,0.08)" : cell,
+                          border: isEmpty
+                            ? "2px dashed rgba(255,255,255,0.25)"
+                            : isFixed
+                            ? "2px solid rgba(255,255,255,0.4)"
+                            : correct
+                            ? "2px solid rgba(46,125,50,0.5)"
+                            : "2px solid transparent",
+                          cursor: isFixed ? "default" : "pointer",
+                          transition: "all 0.15s",
+                          boxSizing: "border-box",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: isEmpty ? (selectedColor ? "0" : "0.8rem") : "0",
+                          color: "rgba(255,255,255,0.4)",
+                        }}
+                      >
+                        {isEmpty && !selectedColor ? "?" : ""}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
