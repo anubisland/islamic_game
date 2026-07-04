@@ -125,6 +125,19 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
             questionsCount={10}
             onClick={() => onSelectGame("battuta")}
           />
+
+          {/* Word Sea Game */}
+          <GameCard
+            icon="📖"
+            title={lang === "ar" ? "بحر الكلمات" : "Word Sea"}
+            subtitle={lang === "ar" ? "ألغاز لغوية من القرآن والسنة" : "Word puzzles from Quran and Sunnah"}
+            desc={lang === "ar"
+              ? "اختبر معرفتك بالكلمات والمفاهيم الإسلامية من القرآن الكريم والحديث النبوي. صل الكلمات بمعانيها، وأكمل الآيات، وتعلم المصطلحات الدينية."
+              : "Test your knowledge of Islamic words and concepts from the Holy Quran and Prophetic Hadith. Match words to meanings, complete verses, and learn religious terms."}
+            stagesCount={8}
+            questionsCount={8}
+            onClick={() => onSelectGame("wordsea")}
+          />
         </div>
       </div>
     </div>

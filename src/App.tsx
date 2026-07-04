@@ -15,6 +15,9 @@ import type { ArchitectStage } from "./games/architect/data/stages";
 import { JourneyMap } from "./games/battuta/pages/JourneyMap";
 import { CityStage } from "./games/battuta/pages/CityStage";
 import type { BattutaStage } from "./games/battuta/data/stages";
+import { WordSeaHome } from "./games/wordsea/pages/WordSeaHome";
+import { WordStagePage } from "./games/wordsea/pages/WordStage";
+import type { WordStage } from "./games/wordsea/data/stages";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
 import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
@@ -34,7 +37,9 @@ type Screen =
   | { id: "architect" }
   | { id: "architect-puzzle"; stage: ArchitectStage }
   | { id: "battuta" }
-  | { id: "battuta-stage"; stage: BattutaStage };
+  | { id: "battuta-stage"; stage: BattutaStage }
+  | { id: "wordsea" }
+  | { id: "wordsea-stage"; stage: WordStage };
 
 export default function App() {
   const sound = useSound();
@@ -44,6 +49,7 @@ export default function App() {
   const [dailyDate, setDailyDate] = useState(() => localStorage.getItem("daily-challenge-date") ?? "");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(loadLeaderboard);
   const [battutaCompleted, setBattutaCompleted] = useState<Set<string>>(new Set());
+  const [wordseaCompleted, setWordseaCompleted] = useState<Set<string>>(new Set());
 
   function handleReset() {
     reset();
@@ -233,6 +239,31 @@ export default function App() {
     );
   }
 
+  if (screen.id === "wordsea") {
+    return (
+      <WordSeaHome
+        onSelectStage={(stage) => setScreen({ id: "wordsea-stage", stage })}
+        onBack={() => setScreen({ id: "hub" })}
+        completed={wordseaCompleted}
+      />
+    );
+  }
+
+  if (screen.id === "wordsea-stage") {
+    return (
+      <WordStagePage
+        stage={screen.stage}
+        onComplete={(stageId) => {
+          const newCompleted = new Set(wordseaCompleted);
+          newCompleted.add(stageId);
+          setWordseaCompleted(newCompleted);
+          setScreen({ id: "wordsea" });
+        }}
+        onBack={() => setScreen({ id: "wordsea" })}
+      />
+    );
+  }
+
   if (screen.id === "daily") {
     const today = getDailyChallengeDate();
     const dailyTitle = lang === "ar"
@@ -267,6 +298,7 @@ export default function App() {
         if (gameId === "faith-journey") setScreen({ id: "home" });
         if (gameId === "architect") setScreen({ id: "architect" });
         if (gameId === "battuta") setScreen({ id: "battuta" });
+        if (gameId === "wordsea") setScreen({ id: "wordsea" });
       }}
       soundEnabled={sound.enabled}
       onToggleSound={() => sound.setEnabled(!sound.enabled)}
