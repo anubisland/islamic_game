@@ -16,6 +16,14 @@ export function MarketHome({ lang, onBack }: Props) {
         maxWidth: 600, margin: "0 auto", padding: "1rem",
         textAlign: "center",
       }}>
+        <button onClick={onBack} style={{
+          background: "none", border: "none", cursor: "pointer",
+          padding: "0.25rem 0", marginBottom: "0.5rem", display: "block",
+          color: "var(--text-light)", fontSize: "0.85rem",
+        }}>
+          {lang === "ar" ? "← العودة إلى المركز" : "← Back to Hub"}
+        </button>
+
         <div style={{
           background: "linear-gradient(135deg, #8B4513, #A0522D)",
           borderRadius: "var(--radius)", padding: "2rem 1.5rem",
