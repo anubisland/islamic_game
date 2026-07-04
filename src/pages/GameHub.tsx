@@ -153,25 +153,18 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
             onClick={() => onSelectGame("detective")}
           />
 
-          {/* Coming soon placeholder */}
-          <div
-            style={{
-              background: "var(--card-bg)",
-              borderRadius: "var(--radius)",
-              padding: "1.5rem",
-              border: "2px dashed var(--border)",
-              textAlign: "center",
-              opacity: 0.6,
-            }}
-          >
-            <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🧩</div>
-            <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-light)", marginBottom: "0.25rem" }}>
-              {gh.futureGame}
-            </h3>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-light)" }}>
-              {lang === "ar" ? "لعبة قادمة قريباً..." : "Coming soon..."}
-            </p>
-          </div>
+          {/* Market Game */}
+          <GameCard
+            icon="🏪"
+            title={lang === "ar" ? "سوق المدينة" : "City Market"}
+            subtitle={lang === "ar" ? "محاكاة تجارة وإدارة في العصر الإسلامي" : "Trade simulation in the Islamic era"}
+            desc={lang === "ar"
+              ? "ابدأ كتاجر صغير في سوق المدينة المنورة. اشترِ البضائع من القوافل، بعها للزبائن، وسّع دكانك، وادفع الزكاة. وازن بين الربح والبركة، وتجنب الغش والاحتكار لتصبح شاه بندر التجار!"
+              : "Start as a small merchant in the Medina market. Buy goods from caravans, sell to customers, expand your shop, and pay zakat. Balance profit with barakah, avoid cheating and hoarding to become Shah Bandar of Merchants!"}
+            stagesCount={1}
+            questionsCount={1}
+            onClick={() => onSelectGame("market")}
+          />
         </div>
       </div>
     </div>

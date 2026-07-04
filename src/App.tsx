@@ -21,6 +21,7 @@ import type { WordStage } from "./games/wordsea/data/stages";
 import { DetectiveHome } from "./games/detective/pages/DetectiveHome";
 import { CaseStage } from "./games/detective/pages/CaseStage";
 import type { DetectiveStage } from "./games/detective/data/stages";
+import { MarketHome } from "./games/market/pages/MarketHome";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
 import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
@@ -44,7 +45,8 @@ type Screen =
   | { id: "wordsea" }
   | { id: "wordsea-stage"; stage: WordStage }
   | { id: "detective" }
-  | { id: "detective-stage"; stage: DetectiveStage };
+  | { id: "detective-stage"; stage: DetectiveStage }
+  | { id: "market" };
 
 export default function App() {
   const sound = useSound();
@@ -296,6 +298,15 @@ export default function App() {
     );
   }
 
+  if (screen.id === "market") {
+    return (
+      <MarketHome
+        lang={lang}
+        onBack={() => setScreen({ id: "hub" })}
+      />
+    );
+  }
+
   if (screen.id === "daily") {
     const today = getDailyChallengeDate();
     const dailyTitle = lang === "ar"
@@ -332,6 +343,7 @@ export default function App() {
         if (gameId === "battuta") setScreen({ id: "battuta" });
         if (gameId === "wordsea") setScreen({ id: "wordsea" });
         if (gameId === "detective") setScreen({ id: "detective" });
+        if (gameId === "market") setScreen({ id: "market" });
       }}
       soundEnabled={sound.enabled}
       onToggleSound={() => sound.setEnabled(!sound.enabled)}
