@@ -278,10 +278,10 @@ export const battutaStages: BattutaStage[] = [
         { ar: "مكة", en: "Mecca" },
         { ar: "القسطنطينية", en: "Constantinople" },
       ],
-      correctOrder: [1, 2, 3, 0],
+      correctOrder: [2, 1, 3, 0],
       info: {
-        ar: "المسار: بغداد → مكة → القسطنطينية → دلهي",
-        en: "Path: Baghdad → Mecca → Constantinople → Delhi",
+        ar: "المسار: مكة → بغداد → القسطنطينية → دلهي",
+        en: "Path: Mecca → Baghdad → Constantinople → Delhi",
       },
     },
     mapX: 72,
