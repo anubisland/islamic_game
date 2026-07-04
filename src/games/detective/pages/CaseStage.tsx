@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { LangStr } from "../data/stages";
 import type { DetectiveStage } from "../data/stages";
+import { detectiveStages } from "../data/stages";
 import { CaseOrder } from "../components/CaseOrder";
 import { CaseSolve } from "../components/CaseSolve";
 
@@ -15,6 +16,7 @@ export function CaseStage({ stage, lang, onComplete }: Props) {
   const [showNext, setShowNext] = useState(false);
   const dir = lang === "ar" ? "rtl" : "ltr";
   const t = (s: LangStr) => s[lang];
+  const isLast = stage.id === detectiveStages[detectiveStages.length - 1].id;
 
   useEffect(() => {
     setPuzzleKey((k) => k + 1);
@@ -85,7 +87,18 @@ export function CaseStage({ stage, lang, onComplete }: Props) {
         display: "flex", gap: "0.5rem", marginTop: "1rem",
         justifyContent: "center",
       }}>
-        {showNext && (
+        {showNext && isLast && (
+          <div style={{
+            padding: "0.75rem 1.5rem", borderRadius: 8,
+            background: "rgba(255,215,0,0.12)", border: "1px solid #FFD700",
+            textAlign: "center",
+          }}>
+            <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "#8B6914" }}>
+              {lang === "ar" ? "🏆 لقد حللتَ جميع القضايا! أحسنت!" : "🏆 You solved all cases! Well done!"}
+            </span>
+          </div>
+        )}
+        {showNext && !isLast && (
           <button onClick={handleNext} style={{
             padding: "0.75rem 2rem", borderRadius: 8, border: "none",
             background: "var(--green-primary)", color: "#fff",
