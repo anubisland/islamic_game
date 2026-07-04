@@ -11,6 +11,8 @@ import { ZakatScreen } from "./ZakatScreen";
 import { CartoonCharacter } from "./CartoonCharacter";
 import { GoodIcon } from "./GoodIcon";
 
+const SAVE_KEY = "market-save";
+
 interface Props {
   lang: "ar" | "en";
   onBack: () => void;
@@ -33,8 +35,16 @@ function createInitialState(): PlayerState {
   };
 }
 
+function loadState(): PlayerState {
+  try {
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (saved) return JSON.parse(saved) as PlayerState;
+  } catch { /* ignore */ }
+  return createInitialState();
+}
+
 export function ShopBoard({ lang, onBack }: Props) {
-  const [state, setState] = useState<PlayerState>(createInitialState);
+  const [state, setState] = useState<PlayerState>(loadState);
   const [marketFlux, setMarketFlux] = useState(() => Math.random());
   const [customer, setCustomer] = useState<{ profile: CustomerProfile; requests: { goodId: string; qty: number }[] } | null>(null);
   const [message, setMessage] = useState<{ text: LangStr; type: "success" | "error" | "info" } | null>(null);
@@ -61,7 +71,12 @@ export function ShopBoard({ lang, onBack }: Props) {
   }, []);
 
   // Initial customer
-  useEffect(() => { spawnCustomer(); }, []);
+  useEffect(() => { spawnCustomer(); }, [spawnCustomer]);
+
+  // Persist game state
+  useEffect(() => {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  }, [state]);
 
   function showMessage(text: LangStr, type: "success" | "error" | "info") {
     setMessage({ text, type });
@@ -299,6 +314,13 @@ export function ShopBoard({ lang, onBack }: Props) {
         padding: "0.6rem 0.75rem", border: "1px solid var(--border)",
         marginBottom: "0.5rem",
       }}>
+        <button onClick={onBack} style={{
+          background: "none", border: "none", cursor: "pointer",
+          color: "var(--text-light)", fontSize: "0.75rem", padding: 0,
+          flexShrink: 0,
+        }}>
+          {lang === "ar" ? "↩" : "↩"}
+        </button>
         <div style={{ flex: 1, minWidth: 120 }}>
           <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>{currentShop.icon} {t(currentShop.name, lang)}</span>
         </div>
@@ -400,15 +422,18 @@ function ShopView({
       {customer ? (
         <div style={{
           background: "var(--card-bg)", borderRadius: "var(--radius)",
-          padding: "0.75rem", border: "1px solid var(--border)",
+          padding: "0.85rem", border: "1px solid var(--border)",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
-            <CartoonCharacter type={customer.profile.id as any} size={52} />
-            <div>
-              <strong style={{ fontSize: "0.9rem", color: "var(--text)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
+            <CartoonCharacter type={customer.profile.id as any} size={56} />
+            <div style={{
+              background: "rgba(139,69,19,0.08)", borderRadius: 6,
+              padding: "0.35rem 0.6rem", flex: 1,
+            }}>
+              <strong style={{ fontSize: "1.05rem", color: "#3E2723" }}>
                 {t_(customer.profile.name)}
               </strong>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-light)", marginLeft: "0.5rem" }}>
+              <span style={{ fontSize: "0.8rem", color: "#8B4513", marginLeft: "0.5rem", fontWeight: 600 }}>
                 {lang === "ar" ? `صبر: ${customer.profile.patience}` : `Patience: ${customer.profile.patience}`}
               </span>
             </div>
