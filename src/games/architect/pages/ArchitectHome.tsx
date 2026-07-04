@@ -134,16 +134,17 @@ export function ArchitectHome({ onSelectPuzzle, onBack, completedPuzzles, puzzle
 }
 
 function MiniGrid({ pattern, palette }: { pattern: number[][]; palette: string[] }) {
+  const cols = pattern[0]?.length ?? 3;
+  const maxRows = 3;
   return (
     <div style={{
       display: "grid",
-      gridTemplateColumns: `repeat(${pattern[0]?.length ?? 3}, 1fr)`,
+      gridTemplateColumns: `repeat(${cols}, 1fr)`,
       gap: 1,
       width: 72,
-      height: 72,
       margin: "0 auto",
     }}>
-      {pattern.slice(0, 6).flat().map((c, i) => (
+      {pattern.slice(0, maxRows).flat().map((c, i) => (
         <div key={i} style={{
           background: c > 0 && c <= palette.length ? palette[c - 1] : "transparent",
           borderRadius: 1,
@@ -208,7 +209,7 @@ function AblaqMiniPreview({ palette }: { palette: string[] }) {
   const b = palette[1] ?? "#888";
   return (
     <div style={{
-      width: 72, height: 72, margin: "0 auto",
+      width: 72, margin: "0 auto",
       display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 1,
       padding: 3, background: "#5D4037", borderRadius: 4,
     }}>
