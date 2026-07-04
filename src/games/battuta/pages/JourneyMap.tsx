@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTranslation } from "../../../i18n";
 import { battutaStages, type BattutaStage } from "../data/stages";
 
@@ -73,7 +72,7 @@ export function JourneyMap({ onSelectStage, onBack }: Props) {
 
           {/* City markers */}
           {battutaStages.map((stage, i) => {
-            const isCompleted = completed.has(stage.id);
+            const isCompleted = false;
             const isFirst = i === 0;
             return (
               <button
@@ -131,7 +130,7 @@ export function JourneyMap({ onSelectStage, onBack }: Props) {
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             {battutaStages.map((stage, i) => {
-              const isCompleted = completed.has(stage.id);
+              const isCompleted = false;
               return (
                 <button
                   key={stage.id}
