@@ -46,6 +46,24 @@ export function WordMatch({ pairs, source, lang, onComplete }: Props) {
 
   return (
     <div dir={dir} style={{ padding: "1rem" }}>
+      {/* Instructions */}
+      <div style={{
+        background: "rgba(21,101,192,0.08)", borderRadius: 8,
+        padding: "0.6rem 0.75rem", marginBottom: "1rem",
+        border: "1px solid rgba(21,101,192,0.2)",
+        fontSize: "0.85rem", lineHeight: 1.7,
+      }}>
+        {lang === "ar" ? (
+          <>
+            <strong>📌 طريقة اللعب:</strong> اختر رقماً من القائمة اليسرى أولاً، ثم اختر المعنى المناسب له من القائمة اليمنى.
+          </>
+        ) : (
+          <>
+            <strong>📌 How to play:</strong> First select a number from the left list, then choose its matching meaning from the right list.
+          </>
+        )}
+      </div>
+
       <div style={{
         display: "grid", gap: "0.75rem", marginBottom: "1rem",
       }}>
@@ -104,7 +122,7 @@ export function WordMatch({ pairs, source, lang, onComplete }: Props) {
           border: "2px solid #d4b87a", marginBottom: "0.75rem",
         }}>
           <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "#8B6914", marginBottom: "0.5rem" }}>
-            {lang === "ar" ? "اختر المعنى المناسب:" : "Choose the matching meaning:"}
+            {lang === "ar" ? "اختر المعنى المناسب (اضغط على المعنى من هذه القائمة):" : "Choose the matching meaning (click a meaning from this list):"}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
             {rightOrder.map((origIdx) => {
