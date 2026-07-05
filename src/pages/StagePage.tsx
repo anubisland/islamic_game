@@ -109,6 +109,10 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
     return clearTimer;
   }, [phase, questionIndex, showExplanation, config.time, shuffledQuestions, st.timeExpired]);
 
+  useEffect(() => {
+    if (phase === "result") onComplete(score, shuffledQuestions.length);
+  }, [phase, score, shuffledQuestions.length, onComplete]);
+
   function handleAnswer(index: number) {
     if (showExplanation) return;
     clearTimer();
@@ -158,7 +162,7 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
 
   function handleBackToStages() {
     sound.click();
-    onComplete(score, shuffledQuestions.length);
+    onBack();
   }
 
   const currentQuestion = shuffledQuestions[questionIndex];

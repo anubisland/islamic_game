@@ -162,8 +162,6 @@ export default function App() {
             }
           });
           if (newUnlock) setTimeout(() => sound.achievement(), 300);
-
-          setScreen({ id: "home" });
         }}
         onBack={() => setScreen({ id: "home" })}
       />
