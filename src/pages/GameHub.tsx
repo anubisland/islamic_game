@@ -68,7 +68,7 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
           }}
         >
           <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem", textAlign: "center" }}>🕌</div>
-          <h2 style={{ fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.75rem", textAlign: "center" }}>
+          <h2 style={{ fontSize: "1.35rem", fontWeight: 800, marginBottom: "0.75rem", textAlign: "center" }}>
             {gh.introCard.title}
             <button onClick={handleSpeak} style={{
               background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)",
@@ -80,7 +80,7 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
               {speaking ? "⏹" : "🔊"}
             </button>
           </h2>
-          <p style={{ lineHeight: 1.8, fontSize: "0.9rem", opacity: 0.9, marginBottom: "1rem" }}>
+          <p style={{ lineHeight: 1.9, fontSize: "1rem", opacity: 0.92, marginBottom: "1rem" }}>
             {gh.introCard.desc}
           </p>
           <button
@@ -102,8 +102,8 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
             <div className="animate-slide-down" style={{ marginTop: "1rem" }}>
               <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {gh.introCard.features.map((feat: string, i: number) => (
-                  <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem" }}>
-                    <span style={{ fontSize: "1.1rem" }}>✅</span>
+                  <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
+                    <span style={{ fontSize: "1.2rem" }}>✅</span>
                     <span>{feat}</span>
                   </li>
                 ))}
