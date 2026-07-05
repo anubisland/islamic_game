@@ -51,6 +51,39 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
       </header>
 
       <div style={{ maxWidth: 700, margin: "0 auto", padding: "1.5rem 0.75rem" }}>
+        {/* Language picker banner */}
+        <div style={{
+          display: "flex", gap: "0.5rem", justifyContent: "center",
+          marginBottom: "1.25rem",
+        }}>
+          <button
+            onClick={() => setLang("ar")}
+            style={{
+              flex: 1, maxWidth: 180, padding: "0.5rem 1rem", borderRadius: 8,
+              border: lang === "ar" ? "2px solid #FFD700" : "2px solid var(--border)",
+              background: lang === "ar" ? "rgba(255,215,0,0.12)" : "var(--card-bg)",
+              color: "var(--text)", fontSize: "0.95rem", fontWeight: 700, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: "0.35rem", justifyContent: "center",
+            }}
+          >
+            🇸🇦 العربية
+            {lang === "ar" && <span style={{ color: "#FFD700" }}>✓</span>}
+          </button>
+          <button
+            onClick={() => setLang("en")}
+            style={{
+              flex: 1, maxWidth: 180, padding: "0.5rem 1rem", borderRadius: 8,
+              border: lang === "en" ? "2px solid #FFD700" : "2px solid var(--border)",
+              background: lang === "en" ? "rgba(255,215,0,0.12)" : "var(--card-bg)",
+              color: "var(--text)", fontSize: "0.95rem", fontWeight: 700, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: "0.35rem", justifyContent: "center",
+            }}
+          >
+            🇬🇧 English
+            {lang === "en" && <span style={{ color: "#FFD700" }}>✓</span>}
+          </button>
+        </div>
+
         <p style={{ textAlign: "center", color: "var(--text-light)", marginBottom: "1.5rem", fontSize: "0.95rem" }}>
           {gh.subtitle}
         </p>
