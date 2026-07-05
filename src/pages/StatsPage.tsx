@@ -1,6 +1,12 @@
 import type { GameStats } from "../utils/stats";
 import { Header } from "../components/Header";
 import { useTranslation } from "../i18n";
+import { DonutChart } from "../components/DonutChart";
+import { BarChart } from "../components/BarChart";
+
+function stageCountByStars(stars: number, breakdown: { stars: number }[]): number {
+  return breakdown.filter((s) => s.stars === stars).length;
+}
 
 interface Props {
   stats: GameStats;
@@ -39,6 +45,58 @@ export function StatsPage({ stats, onBack, soundEnabled, onToggleSound }: Props)
             />
             <StatBox label={s.achievements} value={`${stats.achievementsUnlocked}/${stats.totalAchievements}`} icon="🏅" />
           </div>
+
+          {/* Charts */}
+          {stats.stagesCompleted > 0 && (
+            <div style={{ marginTop: "1.25rem" }}>
+              {/* Stars donut chart */}
+              <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+                <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--green-primary)", marginBottom: "0.5rem" }}>
+                  {lang === "ar" ? "توزيع النجوم" : "Stars Distribution"}
+                </h3>
+                <DonutChart
+                  slices={[
+                    { label: lang === "ar" ? "3 نجوم" : "3 Stars", value: stageCountByStars(3, stats.stageBreakdown), color: "#FFD700" },
+                    { label: lang === "ar" ? "نجمتان" : "2 Stars", value: stageCountByStars(2, stats.stageBreakdown), color: "#d4a02b" },
+                    { label: lang === "ar" ? "نجمة واحدة" : "1 Star", value: stageCountByStars(1, stats.stageBreakdown), color: "#e67e22" },
+                    { label: lang === "ar" ? "غير مكتمل" : "Incomplete", value: stageCountByStars(0, stats.stageBreakdown), color: "#bdc3c7" },
+                  ]}
+                  size={140}
+                  thickness={26}
+                  lang={lang}
+                />
+                {/* Legend */}
+                <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                  {[
+                    { label: lang === "ar" ? "3 نجوم" : "3 Stars", color: "#FFD700" },
+                    { label: lang === "ar" ? "نجمتان" : "2 Stars", color: "#d4a02b" },
+                    { label: lang === "ar" ? "نجمة" : "1 Star", color: "#e67e22" },
+                    { label: lang === "ar" ? "غير مكتمل" : "Incomplete", color: "#bdc3c7" },
+                  ].map((entry, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.25rem", fontSize: "0.7rem", color: "var(--text-light)" }}>
+                      <span style={{ width: 10, height: 10, borderRadius: "50%", background: entry.color, display: "inline-block" }} />
+                      {entry.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bar chart */}
+              <div>
+                <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--green-primary)", marginBottom: "0.5rem" }}>
+                  {lang === "ar" ? "الأداء في كل مرحلة" : "Performance per Stage"}
+                </h3>
+                <BarChart
+                  items={stats.stageBreakdown.map((s) => ({
+                    label: s.title,
+                    value: s.completed ? s.percent : 0,
+                    color: s.completed ? (s.percent >= 90 ? "#1b6b3e" : s.percent >= 60 ? "#d4a02b" : "#e74c3c") : "#ddd",
+                  }))}
+                  height={160}
+                />
+              </div>
+            </div>
+          )}
 
           {stats.stagesCompleted > 0 && (
             <>
