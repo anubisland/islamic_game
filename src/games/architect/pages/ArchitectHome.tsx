@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { architectStages, ARCHITECT_ERA_ORDER, type ArchitectStage } from "../data/stages";
 import { useTranslation } from "../../../i18n";
+import { GameProgressCharts } from "../../../components/GameProgressCharts";
 
 interface Props {
   onSelectPuzzle: (stage: ArchitectStage) => void;
@@ -55,6 +56,18 @@ export function ArchitectHome({ onSelectPuzzle, onBack, completedPuzzles, puzzle
             <div style={{ ...barFill, width: `${(completedCount / architectStages.length) * 100}%` }} />
           </div>
         </div>
+
+        {/* Progress charts */}
+        <GameProgressCharts
+          completed={completedCount}
+          total={architectStages.length}
+          stages={architectStages.map((s) => ({
+            title: s.title,
+            icon: s.icon,
+            done: completedPuzzles[s.id] ?? false,
+          }))}
+          lang={lang}
+        />
 
         {/* Era filters */}
         <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1rem", flexWrap: "wrap" }}>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "../../../i18n";
 import { battutaStages, type BattutaStage } from "../data/stages";
+import { GameProgressCharts } from "../../../components/GameProgressCharts";
 
 interface Props {
   onSelectStage: (stage: BattutaStage) => void;
@@ -101,6 +102,18 @@ export function JourneyMap({ onSelectStage, onBack, completed }: Props) {
             </div>
           )}
         </div>
+
+        {/* Progress charts */}
+        <GameProgressCharts
+          completed={completed.size}
+          total={battutaStages.length}
+          stages={battutaStages.map((s) => ({
+            title: s.city[lang],
+            icon: s.icon,
+            done: completed.has(s.id),
+          }))}
+          lang={lang}
+        />
 
         {/* Map area */}
         <div style={{

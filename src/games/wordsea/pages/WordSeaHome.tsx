@@ -1,5 +1,6 @@
 import { useTranslation } from "../../../i18n";
 import { wordseaStages, type WordStage } from "../data/stages";
+import { GameProgressCharts } from "../../../components/GameProgressCharts";
 
 interface Props {
   onSelectStage: (stage: WordStage) => void;
@@ -42,6 +43,18 @@ export function WordSeaHome({ onSelectStage, onBack, completed }: Props) {
               : "Test your knowledge of Islamic words and concepts! Face linguistic challenges from the Holy Quran and Prophetic Hadith. Match words to meanings, complete verses, and discover Islamic terminology."}
           </p>
         </div>
+
+        {/* Progress charts */}
+        <GameProgressCharts
+          completed={completed.size}
+          total={wordseaStages.length}
+        stages={wordseaStages.map((s) => ({
+            title: s.title[lang],
+            icon: s.icon ?? "📖",
+            done: completed.has(s.id),
+          }))}
+          lang={lang}
+        />
 
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {wordseaStages.map((stage, i) => {

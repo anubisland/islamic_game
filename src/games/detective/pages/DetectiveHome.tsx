@@ -1,6 +1,7 @@
 import type { LangStr } from "../data/stages";
 import type { DetectiveStage } from "../data/stages";
 import { detectiveStages, TOTAL_DETECTIVE_STAGES } from "../data/stages";
+import { GameProgressCharts } from "../../../components/GameProgressCharts";
 
 interface Props {
   completed: Set<string>;
@@ -51,6 +52,18 @@ export function DetectiveHome({ completed, lang, onSelectStage, onBack }: Props)
             : `${TOTAL_DETECTIVE_STAGES} cases to investigate`}
         </p>
       </div>
+
+      {/* Progress charts */}
+      <GameProgressCharts
+        completed={completed.size}
+        total={detectiveStages.length}
+        stages={detectiveStages.map((s) => ({
+          title: s.title[lang],
+          icon: s.icon ?? "🔍",
+          done: completed.has(s.id),
+        }))}
+        lang={lang}
+      />
 
       {/* Stage list */}
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>

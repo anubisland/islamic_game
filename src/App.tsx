@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { achievements, checkAchievements } from "./data/achievements";
+import { checkAchievements } from "./data/achievements";
 import { useProgress } from "./hooks/useProgress";
 import { useSound } from "./hooks/useSound";
 import { useTranslation } from "./i18n";
 import { HomePage } from "./pages/HomePage";
 import { StagePage } from "./pages/StagePage";
 import { SettingsPage } from "./pages/SettingsPage";
-import { StatsPage } from "./pages/StatsPage";
 import { FlashcardPage } from "./pages/FlashcardPage";
 import { GameHub } from "./pages/GameHub";
 import { ArchitectHome } from "./games/architect/pages/ArchitectHome";
@@ -23,7 +22,6 @@ import { CaseStage } from "./games/detective/pages/CaseStage";
 import type { DetectiveStage } from "./games/detective/data/stages";
 import { MarketHome } from "./games/market/pages/MarketHome";
 import { loadLeaderboard, addScore } from "./utils/leaderboard";
-import { computeStats } from "./utils/stats";
 import { generateQuickQuiz } from "./utils/quickQuiz";
 import { generateDailyQuiz, getDailyChallengeDate } from "./utils/dailyQuiz";
 import { saveProgress } from "./utils/storage";
@@ -34,7 +32,6 @@ type Screen =
   | { id: "home" }
   | { id: "stage"; index: number }
   | { id: "settings" }
-  | { id: "stats" }
   | { id: "quick-quiz" }
   | { id: "flashcard"; index: number }
   | { id: "daily" }
@@ -131,7 +128,6 @@ export default function App() {
         onSelectStage={(index) => setScreen({ id: "stage", index })}
         onFlashcards={(index) => setScreen({ id: "flashcard", index })}
         onSettings={() => setScreen({ id: "settings" })}
-        onStats={() => setScreen({ id: "stats" })}
         onQuickQuiz={() => setScreen({ id: "quick-quiz" })}
         onDailyChallenge={() => setScreen({ id: "daily" })}
         dailyCompleted={dailyDate === getDailyChallengeDate()}
@@ -155,17 +151,6 @@ export default function App() {
           saveProgress(data);
           window.location.reload();
         }}
-      />
-    );
-  }
-
-  if (screen.id === "stats") {
-    return (
-      <StatsPage
-        stats={computeStats(progress, achievements.length, stages)}
-        onBack={() => setScreen({ id: "home" })}
-        soundEnabled={sound.enabled}
-        onToggleSound={() => sound.setEnabled(!sound.enabled)}
       />
     );
   }
@@ -345,7 +330,6 @@ export default function App() {
         if (gameId === "detective") setScreen({ id: "detective" });
         if (gameId === "market") setScreen({ id: "market" });
       }}
-      onStats={() => setScreen({ id: "stats" })}
       soundEnabled={sound.enabled}
       onToggleSound={() => sound.setEnabled(!sound.enabled)}
     />
