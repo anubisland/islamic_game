@@ -58,6 +58,8 @@ export default function App() {
   const [battutaCompleted, setBattutaCompleted] = useState<Set<string>>(new Set());
   const [wordseaCompleted, setWordseaCompleted] = useState<Set<string>>(new Set());
   const [detectiveCompleted, setDetectiveCompleted] = useState<Set<string>>(new Set());
+  const [architectCompleted, setArchitectCompleted] = useState<Set<string>>(new Set());
+  const [architectStars, setArchitectStars] = useState<Record<string, number>>({});
 
   function handleReset() {
     reset();
@@ -202,8 +204,8 @@ export default function App() {
       <ArchitectHome
         onSelectPuzzle={(stage) => setScreen({ id: "architect-puzzle", stage })}
         onBack={() => setScreen({ id: "hub" })}
-        completedPuzzles={{}}
-        puzzleStars={{}}
+        completedPuzzles={Object.fromEntries([...architectCompleted].map(id => [id, true]))}
+        puzzleStars={architectStars}
         soundEnabled={sound.enabled}
         onToggleSound={() => sound.setEnabled(!sound.enabled)}
       />
@@ -214,7 +216,11 @@ export default function App() {
     return (
       <PuzzlePage
         stage={screen.stage}
-        onComplete={() => {
+        onComplete={(stageId, stars) => {
+          const newCompleted = new Set(architectCompleted);
+          newCompleted.add(stageId);
+          setArchitectCompleted(newCompleted);
+          setArchitectStars(prev => ({ ...prev, [stageId]: stars }));
           setScreen({ id: "architect" });
         }}
         onBack={() => setScreen({ id: "architect" })}
