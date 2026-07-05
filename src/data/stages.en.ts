@@ -127,6 +127,18 @@ export const stages: Stage[] = [
         content:
           "Allah sent messengers as bearers of good news and warners. The first was Noah and the last is Muhammad ﷺ. We must believe in all the messengers and prophets mentioned by Allah.",
       },
+      {
+        id: "belief-lastday",
+        title: "Belief in the Last Day",
+        content:
+          "The Last Day is the Day of Judgment when Allah will resurrect all people for accountability and reward. We believe in everything Allah and His Messenger told us about it: resurrection, gathering, the scale, the bridge, Paradise and Hellfire. Belief in the Last Day motivates a believer to be conscious of Allah and do righteous deeds.",
+      },
+      {
+        id: "belief-decree",
+        title: "Belief in Divine Decree (Qadr)",
+        content:
+          "Belief in divine decree is the sixth pillar of faith. We believe that Allah has decreed all things by His knowledge and wisdom, and everything that happens in the universe is by Allah's will and decree. We believe in destiny, both its good and its bad, while taking necessary means and relying on Allah.",
+      },
     ],
     questions: [
       {
