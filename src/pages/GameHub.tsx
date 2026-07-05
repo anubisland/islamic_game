@@ -80,7 +80,7 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
               {speaking ? "⏹" : "🔊"}
             </button>
           </h2>
-          <p style={{ lineHeight: 1.9, fontSize: "1rem", opacity: 0.92, marginBottom: "1rem" }}>
+          <p style={{ lineHeight: 1.9, fontSize: "1rem", opacity: 0.92, marginBottom: "1rem", textAlign: "justify" }}>
             {gh.introCard.desc}
           </p>
           <button
@@ -102,7 +102,7 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
             <div className="animate-slide-down" style={{ marginTop: "1rem" }}>
               <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {gh.introCard.features.map((feat: string, i: number) => (
-                  <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
+                  <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem", textAlign: "justify" }}>
                     <span style={{ fontSize: "1.2rem" }}>✅</span>
                     <span>{feat}</span>
                   </li>
