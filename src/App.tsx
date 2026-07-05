@@ -345,6 +345,7 @@ export default function App() {
         if (gameId === "detective") setScreen({ id: "detective" });
         if (gameId === "market") setScreen({ id: "market" });
       }}
+      onStats={() => setScreen({ id: "stats" })}
       soundEnabled={sound.enabled}
       onToggleSound={() => sound.setEnabled(!sound.enabled)}
     />

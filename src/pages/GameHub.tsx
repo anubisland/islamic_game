@@ -5,11 +5,12 @@ import { TOTAL_DETECTIVE_STAGES } from "../games/detective/data/stages";
 
 interface Props {
   onSelectGame: (gameId: string) => void;
+  onStats?: () => void;
   soundEnabled?: boolean;
   onToggleSound?: () => void;
 }
 
-export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
+export function GameHub({ onSelectGame, onStats, soundEnabled, onToggleSound }: Props) {
   const { t, lang, setLang, dir } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -35,6 +36,11 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
         <div style={headerInner}>
           <h1 style={logoStyle}>🧩 {gh.title}</h1>
           <div style={{ display: "flex", gap: "0.35rem" }}>
+            {onStats && (
+              <button onClick={onStats} style={iconBtn} title={lang === "ar" ? "الإحصائيات" : "Stats"}>
+                📊
+              </button>
+            )}
             {onToggleSound !== undefined && (
               <button onClick={onToggleSound} style={iconBtn} title={soundEnabled ? t.header.mute : t.header.unmute}>
                 {soundEnabled ? "🔊" : "🔇"}
