@@ -13,6 +13,7 @@ interface Props {
   onSelectStage: (index: number) => void;
   onFlashcards: (index: number) => void;
   onSettings: () => void;
+  onStats: () => void;
   onQuickQuiz: () => void;
   onDailyChallenge?: () => void;
   dailyCompleted?: boolean;
@@ -22,7 +23,7 @@ interface Props {
   onBackToHub?: () => void;
 }
 
-export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, onSettings, onQuickQuiz, onDailyChallenge, dailyCompleted, onReset, soundEnabled, onToggleSound, onBackToHub }: Props) {
+export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, onSettings, onStats, onQuickQuiz, onDailyChallenge, dailyCompleted, onReset, soundEnabled, onToggleSound, onBackToHub }: Props) {
   const { t, stages } = useTranslation();
   const completedCount = Object.values(progress.stages).filter((s) => s.completed).length;
   const pct = stages.length > 0 ? (completedCount / stages.length) * 100 : 0;
@@ -57,6 +58,13 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", gap: "0.25rem" }}>
+              <button
+                onClick={onStats}
+                style={{ background: "transparent", border: "none", fontSize: "1.15rem", cursor: "pointer", padding: "0.25rem" }}
+                title={h.stats}
+              >
+                📊
+              </button>
               <button
                 onClick={onSettings}
                 style={{ background: "transparent", border: "none", fontSize: "1.15rem", cursor: "pointer", padding: "0.25rem" }}
