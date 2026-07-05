@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { achievements, checkAchievements } from "./data/achievements";
 import { useProgress } from "./hooks/useProgress";
 import { useSound } from "./hooks/useSound";
@@ -29,6 +29,34 @@ import { generateDailyQuiz, getDailyChallengeDate } from "./utils/dailyQuiz";
 import { saveProgress } from "./utils/storage";
 import type { LeaderboardEntry, Stage } from "./types";
 
+const GAMES_STORAGE_KEY = "islamic-game-all-progress";
+
+interface GamesProgress {
+  architectCompleted: string[];
+  architectStars: Record<string, number>;
+  battutaCompleted: string[];
+  wordseaCompleted: string[];
+  detectiveCompleted: string[];
+}
+
+function loadGamesProgress(): GamesProgress {
+  try {
+    const raw = localStorage.getItem(GAMES_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return {
+    architectCompleted: [],
+    architectStars: {},
+    battutaCompleted: [],
+    wordseaCompleted: [],
+    detectiveCompleted: [],
+  };
+}
+
+function saveGamesProgress(data: GamesProgress): void {
+  localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(data));
+}
+
 type Screen =
   | { id: "hub" }
   | { id: "home" }
@@ -55,17 +83,34 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>({ id: "hub" });
   const [dailyDate, setDailyDate] = useState(() => localStorage.getItem("daily-challenge-date") ?? "");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(loadLeaderboard);
-  const [battutaCompleted, setBattutaCompleted] = useState<Set<string>>(new Set());
-  const [wordseaCompleted, setWordseaCompleted] = useState<Set<string>>(new Set());
-  const [detectiveCompleted, setDetectiveCompleted] = useState<Set<string>>(new Set());
-  const [architectCompleted, setArchitectCompleted] = useState<Set<string>>(new Set());
-  const [architectStars, setArchitectStars] = useState<Record<string, number>>({});
+  const [initialLoad] = useState(() => loadGamesProgress());
+  const [battutaCompleted, setBattutaCompleted] = useState<Set<string>>(new Set(initialLoad.battutaCompleted));
+  const [wordseaCompleted, setWordseaCompleted] = useState<Set<string>>(new Set(initialLoad.wordseaCompleted));
+  const [detectiveCompleted, setDetectiveCompleted] = useState<Set<string>>(new Set(initialLoad.detectiveCompleted));
+  const [architectCompleted, setArchitectCompleted] = useState<Set<string>>(new Set(initialLoad.architectCompleted));
+  const [architectStars, setArchitectStars] = useState<Record<string, number>>(initialLoad.architectStars);
+
+  useEffect(() => {
+    saveGamesProgress({
+      architectCompleted: [...architectCompleted],
+      architectStars,
+      battutaCompleted: [...battutaCompleted],
+      wordseaCompleted: [...wordseaCompleted],
+      detectiveCompleted: [...detectiveCompleted],
+    });
+  }, [architectCompleted, architectStars, battutaCompleted, wordseaCompleted, detectiveCompleted]);
 
   function handleReset() {
     reset();
     setLeaderboard([]);
+    setArchitectCompleted(new Set());
+    setArchitectStars({});
+    setBattutaCompleted(new Set());
+    setWordseaCompleted(new Set());
+    setDetectiveCompleted(new Set());
     localStorage.removeItem("islamic-quest-leaderboard");
     localStorage.removeItem("daily-challenge-date");
+    localStorage.removeItem(GAMES_STORAGE_KEY);
     setDailyDate("");
   }
 

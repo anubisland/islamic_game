@@ -88,15 +88,24 @@ export function CaseStage({ stage, lang, onComplete }: Props) {
         justifyContent: "center",
       }}>
         {showNext && isLast && (
-          <div style={{
-            padding: "0.75rem 1.5rem", borderRadius: 8,
-            background: "rgba(255,215,0,0.12)", border: "1px solid #FFD700",
-            textAlign: "center",
-          }}>
-            <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "#8B6914" }}>
-              {lang === "ar" ? "🏆 لقد حللتَ جميع القضايا! أحسنت!" : "🏆 You solved all cases! Well done!"}
-            </span>
-          </div>
+          <>
+            <div style={{
+              padding: "0.75rem 1.5rem", borderRadius: 8,
+              background: "rgba(255,215,0,0.12)", border: "1px solid #FFD700",
+              textAlign: "center", marginBottom: "0.5rem",
+            }}>
+              <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "#8B6914" }}>
+                {lang === "ar" ? "🏆 لقد حللتَ جميع القضايا! أحسنت!" : "🏆 You solved all cases! Well done!"}
+              </span>
+            </div>
+            <button onClick={handleNext} style={{
+              padding: "0.75rem 2rem", borderRadius: 8, border: "none",
+              background: "var(--green-primary)", color: "#fff",
+              fontSize: "1rem", fontWeight: 700, cursor: "pointer",
+            }}>
+              {lang === "ar" ? "✅ العودة إلى القائمة" : "✅ Back to List"}
+            </button>
+          </>
         )}
         {showNext && !isLast && (
           <button onClick={handleNext} style={{

@@ -5,6 +5,7 @@ import { StageCard } from "../components/StageCard";
 import { AchievementBadge } from "../components/AchievementBadge";
 import { Leaderboard } from "../components/Leaderboard";
 import { Header } from "../components/Header";
+import { GameProgressCharts } from "../components/GameProgressCharts";
 import { useTranslation } from "../i18n";
 
 interface Props {
@@ -24,7 +25,7 @@ interface Props {
 }
 
 export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, onSettings, onStats, onQuickQuiz, onDailyChallenge, dailyCompleted, onReset, soundEnabled, onToggleSound, onBackToHub }: Props) {
-  const { t, stages } = useTranslation();
+  const { t, stages, lang } = useTranslation();
   const completedCount = Object.values(progress.stages).filter((s) => s.completed).length;
   const pct = stages.length > 0 ? (completedCount / stages.length) * 100 : 0;
   const unlockedIds = progress.achievements ?? [];
@@ -122,6 +123,17 @@ export function HomePage({ progress, leaderboard, onSelectStage, onFlashcards, o
               />
             </div>
           </div>
+
+          <GameProgressCharts
+            completed={completedCount}
+            total={stages.length}
+            stages={stages.map((s) => ({
+              title: s.title,
+              icon: s.icon,
+              done: progress.stages[s.id]?.completed ?? false,
+            }))}
+            lang={lang}
+          />
 
           <div style={{ textAlign: "center", marginTop: "1rem", display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
             {onDailyChallenge && (
