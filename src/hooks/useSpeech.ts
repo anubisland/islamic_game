@@ -49,7 +49,7 @@ export function useSpeech() {
   const speakKey = useCallback((key: string, lang: "ar" | "en") => {
     stop();
     const slot = VOICE_SLOTS.find(s => s.id === voiceId) ?? VOICE_SLOTS[4];
-    const url = `/audio/${slot.id}/${key}_${lang}.mp3`;
+    const url = `${import.meta.env.BASE_URL}audio/${slot.id}/${key}_${lang}.mp3`;
     const audio = new Audio(url);
     audio.preload = "auto";
     audio.onended = () => { setSpeaking(false); currentAudio.current = null; };
