@@ -20,6 +20,8 @@ export const ar = {
       questions: "سؤال",
     },
     futureGame: "قريباً",
+    voiceLabel: "الصوت:",
+    voiceAuto: "تلقائي",
   },
   home: {
     title: "رحلة الإيمان",

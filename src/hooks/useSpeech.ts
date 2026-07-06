@@ -1,59 +1,69 @@
-function getBestVoice(lang: "ar" | "en"): SpeechSynthesisVoice | null {
-  const voices = window.speechSynthesis.getVoices();
-  const langPrefix = lang === "ar" ? "ar" : "en";
+import { useCallback, useEffect, useState } from "react";
 
-  // Prioritize neural / natural voices
-  const neural = voices.find(v => v.lang.startsWith(langPrefix) && (v.name.includes("Neural") || v.name.includes("Natural")));
-  if (neural) return neural;
+const VOICE_KEY = "islamic-quest-voice";
 
-  // Fallback to any voice matching the language, preferring female for Arabic, male for English
-  const gender = lang === "ar" ? ["Hoda", "Zira"] : ["Mark", "David", "Jenny"];
-  for (const name of gender) {
-    const match = voices.find(v => v.lang.startsWith(langPrefix) && v.name.includes(name));
-    if (match) return match;
-  }
-
-  // Last resort: first voice matching the language
-  return voices.find(v => v.lang.startsWith(langPrefix)) ?? null;
+function loadVoicePref(): string {
+  try { return localStorage.getItem(VOICE_KEY) ?? ""; } catch { return ""; }
+}
+function saveVoicePref(uri: string) {
+  try { localStorage.setItem(VOICE_KEY, uri); } catch { /* ignore */ }
 }
 
 export function useSpeech() {
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voiceURI, setVoiceURI] = useState(loadVoicePref);
+
+  // Load voices when they become available
+  useEffect(() => {
+    function update() { setVoices(window.speechSynthesis.getVoices()); }
+    update();
+    window.speechSynthesis.addEventListener("voiceschanged", update);
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", update);
+  }, []);
+
+  const setVoice = useCallback((uri: string) => {
+    setVoiceURI(uri);
+    saveVoicePref(uri);
+  }, []);
+
+  function pickVoice(lang: "ar" | "en"): SpeechSynthesisVoice | null {
+    // If user selected a voice, use it
+    if (voiceURI) {
+      const preferred = voices.find(v => v.voiceURI === voiceURI);
+      if (preferred) return preferred;
+    }
+    // Auto-pick best available
+    const prefix = lang === "ar" ? "ar" : "en";
+    const neural = voices.find(v => v.lang.startsWith(prefix) && (v.name.includes("Neural") || v.name.includes("Natural")));
+    if (neural) return neural;
+    const names = lang === "ar" ? ["Hoda", "Zira"] : ["Jenny", "Mark", "David"];
+    for (const n of names) {
+      const m = voices.find(v => v.lang.startsWith(prefix) && v.name.includes(n));
+      if (m) return m;
+    }
+    return voices.find(v => v.lang.startsWith(prefix)) ?? null;
+  }
+
   function speak(text: string, lang: "ar" | "en") {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
 
-    // On Chromium, voices are loaded asynchronously
+    const doSpeak = () => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang === "ar" ? "ar-SA" : "en-US";
+      utterance.rate = 0.85;
+      utterance.pitch = 1;
+      const voice = pickVoice(lang);
+      if (voice) utterance.voice = voice;
+      window.speechSynthesis.speak(utterance);
+    };
+
     if (window.speechSynthesis.getVoices().length === 0) {
-      window.speechSynthesis.addEventListener("voiceschanged", () => {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang === "ar" ? "ar-SA" : "en-US";
-        utterance.rate = 0.85;
-        utterance.pitch = 1;
-        const voice = getBestVoice(lang);
-        if (voice) utterance.voice = voice;
-        window.speechSynthesis.speak(utterance);
-      }, { once: true });
-      // Edge case: voiceschanged may never fire; speak anyway
-      setTimeout(() => {
-        if (!window.speechSynthesis.speaking) {
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = lang === "ar" ? "ar-SA" : "en-US";
-          utterance.rate = 0.85;
-          const voice = getBestVoice(lang);
-          if (voice) utterance.voice = voice;
-          window.speechSynthesis.speak(utterance);
-        }
-      }, 300);
+      window.speechSynthesis.addEventListener("voiceschanged", doSpeak, { once: true });
+      setTimeout(() => { if (!window.speechSynthesis.speaking) doSpeak(); }, 300);
       return;
     }
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = lang === "ar" ? "ar-SA" : "en-US";
-    utterance.rate = 0.85;
-    utterance.pitch = 1;
-    const voice = getBestVoice(lang);
-    if (voice) utterance.voice = voice;
-    window.speechSynthesis.speak(utterance);
+    doSpeak();
   }
 
   function stop() {
@@ -61,5 +71,5 @@ export function useSpeech() {
     window.speechSynthesis.cancel();
   }
 
-  return { speak, stop };
+  return { speak, stop, voices, voiceURI, setVoice };
 }

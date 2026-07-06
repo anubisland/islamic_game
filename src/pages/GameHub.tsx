@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "../i18n";
 import { useSpeech } from "../hooks/useSpeech";
+import { VoicePicker } from "../components/VoicePicker";
 import { TOTAL_DETECTIVE_STAGES } from "../games/detective/data/stages";
 
 interface Props {
@@ -108,6 +109,7 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
                   </li>
                 ))}
               </ul>
+              <VoicePicker lang={lang} />
             </div>
           )}
         </div>

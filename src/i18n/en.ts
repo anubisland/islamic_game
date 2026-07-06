@@ -20,6 +20,8 @@ export const en = {
       questions: "Question",
     },
     futureGame: "Coming Soon",
+    voiceLabel: "Voice:",
+    voiceAuto: "Auto",
   },
   home: {
     title: "Faith Journey",
