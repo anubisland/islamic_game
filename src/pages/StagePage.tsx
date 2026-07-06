@@ -73,6 +73,17 @@ export function StagePage({ stage, difficulty = "normal", onSetDifficulty, onCom
   const st = t.stage;
   const dc = t.difficulty;
 
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+  const completedRef = useRef(false);
+
+  useEffect(() => {
+    if (phase === "result" && !completedRef.current) {
+      completedRef.current = true;
+      onCompleteRef.current(score, shuffledQuestions.length);
+    }
+  }, [phase, score, shuffledQuestions.length]);
+
   function clearTimer() {
     if (timerRef.current !== null) {
       clearInterval(timerRef.current);
