@@ -9,13 +9,30 @@ function saveVoicePref(uri: string) {
   try { localStorage.setItem(VOICE_KEY, uri); } catch { /* ignore */ }
 }
 
+/** Chrome workaround: getVoices() returns [] until a synth call triggers loading */
+function primeVoiceEngine() {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.getVoices();
+  // Force Chrome to populate voices by scheduling a dummy speak/cancel
+  try {
+    const u = new SpeechSynthesisUtterance("");
+    u.volume = 0;
+    window.speechSynthesis.speak(u);
+    window.speechSynthesis.cancel();
+  } catch { /* ignore */ }
+}
+
 export function useSpeech() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voiceURI, setVoiceURI] = useState(loadVoicePref);
 
-  // Load voices when they become available
   useEffect(() => {
-    function update() { setVoices(window.speechSynthesis.getVoices()); }
+    primeVoiceEngine();
+
+    function update() {
+      const v = window.speechSynthesis.getVoices();
+      if (v.length > 0) setVoices(v);
+    }
     update();
     window.speechSynthesis.addEventListener("voiceschanged", update);
     return () => window.speechSynthesis.removeEventListener("voiceschanged", update);
@@ -27,16 +44,14 @@ export function useSpeech() {
   }, []);
 
   function pickVoice(lang: "ar" | "en"): SpeechSynthesisVoice | null {
-    // If user selected a voice, use it
     if (voiceURI) {
       const preferred = voices.find(v => v.voiceURI === voiceURI);
       if (preferred) return preferred;
     }
-    // Auto-pick best available
     const prefix = lang === "ar" ? "ar" : "en";
     const neural = voices.find(v => v.lang.startsWith(prefix) && (v.name.includes("Neural") || v.name.includes("Natural")));
     if (neural) return neural;
-    const names = lang === "ar" ? ["Hoda", "Zira"] : ["Jenny", "Mark", "David"];
+    const names = lang === "ar" ? ["Hoda", "Shaker", "Zira"] : ["Jenny", "Mark", "David"];
     for (const n of names) {
       const m = voices.find(v => v.lang.startsWith(prefix) && v.name.includes(n));
       if (m) return m;
@@ -60,7 +75,7 @@ export function useSpeech() {
 
     if (window.speechSynthesis.getVoices().length === 0) {
       window.speechSynthesis.addEventListener("voiceschanged", doSpeak, { once: true });
-      setTimeout(() => { if (!window.speechSynthesis.speaking) doSpeak(); }, 300);
+      setTimeout(() => { if (!window.speechSynthesis.speaking) doSpeak(); }, 500);
       return;
     }
     doSpeak();
