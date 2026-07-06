@@ -16,12 +16,17 @@ export function loadLeaderboard(): LeaderboardEntry[] {
           seen.set(e.stageId, e);
         }
       }
-      return [...seen.values()].sort((a, b) => {
+      const deduped = [...seen.values()].sort((a, b) => {
         const pctA = a.score / a.total;
         const pctB = b.score / b.total;
         if (pctB !== pctA) return pctB - pctA;
         return new Date(b.date).getTime() - new Date(a.date).getTime();
       });
+      // If data was deduplicated, clean up localStorage for next load
+      if (deduped.length < entries.length) {
+        saveLeaderboard(deduped);
+      }
+      return deduped;
     }
   } catch {
     /* ignore */
