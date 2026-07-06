@@ -84,6 +84,9 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
           <p style={{ lineHeight: 1.9, fontSize: "1rem", opacity: 0.92, marginBottom: "1rem", textAlign: "justify" }}>
             {gh.introCard.desc}
           </p>
+
+          <VoicePicker lang={lang} />
+
           <button
             onClick={() => setExpanded(!expanded)}
             style={{
@@ -109,7 +112,6 @@ export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
                   </li>
                 ))}
               </ul>
-              <VoicePicker lang={lang} />
             </div>
           )}
         </div>
