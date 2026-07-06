@@ -2,6 +2,27 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const VOICE_KEY = "islamic-quest-voice";
 
+export interface VoiceSlot {
+  id: string;
+  labelAr: string;
+  labelEn: string;
+  descAr: string;
+  descEn: string;
+  /** Substring to match in voice.name for Arabic */
+  arName: string;
+  /** Substring to match in voice.name for English */
+  enName: string;
+}
+
+export const VOICE_SLOTS: VoiceSlot[] = [
+  { id: "classic", labelAr: "حامد", labelEn: "Hamed", descAr: "فصيح", descEn: "Classic", arName: "Hamed", enName: "Guy" },
+  { id: "gentle", labelAr: "زارية", labelEn: "Zariyah", descAr: "هادئ", descEn: "Gentle", arName: "Zariyah", enName: "Aria" },
+  { id: "story", labelAr: "سلمى", labelEn: "Salma", descAr: "حكواتية", descEn: "Storyteller", arName: "Salma", enName: "Jenny" },
+  { id: "warm", labelAr: "عبدالله", labelEn: "Abdullah", descAr: "ودود", descEn: "Warm", arName: "Abdullah", enName: "Ryan" },
+  { id: "shakir", labelAr: "شاكر", labelEn: "Shakir", descAr: "مصري", descEn: "Egyptian", arName: "Shakir", enName: "Brian" },
+  { id: "hoda", labelAr: "هدى", labelEn: "Hoda", descAr: "أنثى", descEn: "Female", arName: "Hoda", enName: "Zira" },
+];
+
 function loadVoicePref(): string {
   try { return localStorage.getItem(VOICE_KEY) ?? ""; } catch { return ""; }
 }
@@ -11,11 +32,10 @@ function saveVoicePref(uri: string) {
 
 export function useSpeech() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [voiceURI, setVoiceURI] = useState(loadVoicePref);
+  const [voiceId, setVoiceId] = useState(loadVoicePref);
   const pollRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   useEffect(() => {
-    // Prime Chrome's voice engine
     window.speechSynthesis?.getVoices();
     try {
       const u = new SpeechSynthesisUtterance("");
@@ -32,7 +52,6 @@ export function useSpeech() {
       }
     }
 
-    // Poll aggressively for voices (Chrome bug workaround)
     pollRef.current = setInterval(refresh, 150);
     setTimeout(() => clearInterval(pollRef.current), 8000);
 
@@ -43,26 +62,25 @@ export function useSpeech() {
     };
   }, []);
 
-  const setVoice = useCallback((uri: string) => {
-    setVoiceURI(uri);
-    saveVoicePref(uri);
+  const setVoice = useCallback((id: string) => {
+    setVoiceId(id);
+    saveVoicePref(id);
   }, []);
 
-  function pickVoice(lang: "ar" | "en"): SpeechSynthesisVoice | null {
-    if (voiceURI) {
-      const preferred = voices.find(v => v.voiceURI === voiceURI);
-      if (preferred) return preferred;
+  function resolveVoice(lang: "ar" | "en"): SpeechSynthesisVoice | null {
+    // If user picked a slot, find a matching voice
+    const slot = VOICE_SLOTS.find(s => s.id === voiceId);
+    if (slot) {
+      const name = lang === "ar" ? slot.arName : slot.enName;
+      const prefix = lang === "ar" ? "ar" : "en";
+      const match = voices.find(v => v.lang.startsWith(prefix) && v.name.includes(name));
+      if (match) return match;
     }
+    // Fallback: find any neural voice for this language
     const prefix = lang === "ar" ? "ar" : "en";
     const neural = voices.find(v => v.lang.startsWith(prefix) && (v.name.includes("Neural") || v.name.includes("Natural")));
     if (neural) return neural;
-    // Known Windows Arabic voices: Shaker, Hamed, Hoda, Zira
-    // Known Windows English voices: Jenny, Mark, David, Zira
-    const names = lang === "ar" ? ["Shaker", "Hamed", "Hoda", "Zira"] : ["Jenny", "Mark", "David", "Zira"];
-    for (const n of names) {
-      const m = voices.find(v => v.lang.startsWith(prefix) && v.name.includes(n));
-      if (m) return m;
-    }
+    // Any voice matching language
     return voices.find(v => v.lang.startsWith(prefix)) ?? null;
   }
 
@@ -75,7 +93,7 @@ export function useSpeech() {
       utterance.lang = lang === "ar" ? "ar-SA" : "en-US";
       utterance.rate = 0.85;
       utterance.pitch = 1;
-      const voice = pickVoice(lang);
+      const voice = resolveVoice(lang);
       if (voice) utterance.voice = voice;
       window.speechSynthesis.speak(utterance);
     };
@@ -94,5 +112,5 @@ export function useSpeech() {
     window.speechSynthesis.cancel();
   }
 
-  return { speak, stop, voices, voiceURI, setVoice };
+  return { speak, stop, voices, voiceId, setVoice, VOICE_SLOTS };
 }
