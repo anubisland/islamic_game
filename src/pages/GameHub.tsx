@@ -13,22 +13,14 @@ interface Props {
 export function GameHub({ onSelectGame, soundEnabled, onToggleSound }: Props) {
   const { t, lang, setLang, dir } = useTranslation();
   const [expanded, setExpanded] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const { speak, stop } = useSpeech();
+  const { speakKey, stop, speaking } = useSpeech();
   const gh = t.gameHub;
 
   const handleSpeak = useCallback(() => {
-    if (speaking) { stop(); setSpeaking(false); return; }
-    const text = `${gh.introCard.title}. ${gh.introCard.desc}${expanded ? ` ${gh.introCard.features.join(". ")}` : ""}`;
-    setSpeaking(true);
-    speak(text, lang);
-    const check = setInterval(() => {
-      if (!window.speechSynthesis.speaking) {
-        clearInterval(check);
-        setSpeaking(false);
-      }
-    }, 200);
-  }, [speaking, expanded, gh, lang, speak, stop]);
+    if (speaking) { stop(); return; }
+    const key = expanded ? "gamehub_intro_full" : "gamehub_intro_collapsed";
+    speakKey(key, lang);
+  }, [speaking, expanded, lang, speakKey, stop]);
 
   return (
     <div dir={dir}>

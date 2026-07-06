@@ -1,0 +1,51 @@
+{
+  "rate": "-10%",
+  "slots": {
+    "classic": {
+      "ar": "ar-SA-HamedNeural",
+      "en": "en-US-GuyNeural",
+      "labelAr": "حامد",
+      "labelEn": "Hamed",
+      "descAr": "صوت فصيح",
+      "descEn": "Classic male"
+    },
+    "gentle": {
+      "ar": "ar-SA-ZariyahNeural",
+      "en": "en-US-AriaNeural",
+      "labelAr": "زارية",
+      "labelEn": "Zariyah",
+      "descAr": "صوت هادئ",
+      "descEn": "Gentle female"
+    },
+    "story": {
+      "ar": "ar-EG-SalmaNeural",
+      "en": "en-US-JennyNeural",
+      "labelAr": "سلمى",
+      "labelEn": "Salma",
+      "descAr": "حكواتية",
+      "descEn": "Storyteller female"
+    },
+    "warm": {
+      "ar": "ar-OM-AbdullahNeural",
+      "en": "en-GB-RyanNeural",
+      "labelAr": "عبدالله",
+      "labelEn": "Abdullah",
+      "descAr": "صوت ودود",
+      "descEn": "Warm male"
+    },
+    "shakir": {
+      "ar": "ar-EG-ShakirNeural",
+      "en": "en-US-BrianNeural",
+      "labelAr": "شاكر",
+      "labelEn": "Shakir",
+      "descAr": "صوت مصري",
+      "descEn": "Egyptian male"
+    }
+  },
+  "files": [
+    "gamehub_intro_collapsed_ar",
+    "gamehub_intro_collapsed_en",
+    "gamehub_intro_full_ar",
+    "gamehub_intro_full_en"
+  ]
+}

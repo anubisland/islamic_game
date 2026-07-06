@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 const VOICE_KEY = "islamic-quest-voice";
 
@@ -8,58 +8,37 @@ export interface VoiceSlot {
   labelEn: string;
   descAr: string;
   descEn: string;
-  /** Substring to match in voice.name for Arabic */
-  arName: string;
-  /** Substring to match in voice.name for English */
-  enName: string;
+  arVoice: string;
+  enVoice: string;
 }
 
 export const VOICE_SLOTS: VoiceSlot[] = [
-  { id: "classic", labelAr: "حامد", labelEn: "Hamed", descAr: "فصيح", descEn: "Classic", arName: "Hamed", enName: "Guy" },
-  { id: "gentle", labelAr: "زارية", labelEn: "Zariyah", descAr: "هادئ", descEn: "Gentle", arName: "Zariyah", enName: "Aria" },
-  { id: "story", labelAr: "سلمى", labelEn: "Salma", descAr: "حكواتية", descEn: "Storyteller", arName: "Salma", enName: "Jenny" },
-  { id: "warm", labelAr: "عبدالله", labelEn: "Abdullah", descAr: "ودود", descEn: "Warm", arName: "Abdullah", enName: "Ryan" },
-  { id: "shakir", labelAr: "شاكر", labelEn: "Shakir", descAr: "مصري", descEn: "Egyptian", arName: "Shakir", enName: "Brian" },
-  { id: "hoda", labelAr: "هدى", labelEn: "Hoda", descAr: "أنثى", descEn: "Female", arName: "Hoda", enName: "Zira" },
+  { id: "classic", labelAr: "حامد", labelEn: "Hamed", descAr: "صوت فصيح", descEn: "Classic male", arVoice: "ar-SA-HamedNeural", enVoice: "en-US-GuyNeural" },
+  { id: "gentle", labelAr: "زارية", labelEn: "Zariyah", descAr: "صوت هادئ", descEn: "Gentle female", arVoice: "ar-SA-ZariyahNeural", enVoice: "en-US-AriaNeural" },
+  { id: "story", labelAr: "سلمى", labelEn: "Salma", descAr: "حكواتية", descEn: "Storyteller female", arVoice: "ar-EG-SalmaNeural", enVoice: "en-US-JennyNeural" },
+  { id: "warm", labelAr: "عبدالله", labelEn: "Abdullah", descAr: "صوت ودود", descEn: "Warm male", arVoice: "ar-OM-AbdullahNeural", enVoice: "en-GB-RyanNeural" },
+  { id: "shakir", labelAr: "شاكر", labelEn: "Shakir", descAr: "صوت مصري", descEn: "Egyptian male", arVoice: "ar-EG-ShakirNeural", enVoice: "en-US-BrianNeural" },
 ];
 
 function loadVoicePref(): string {
-  try { return localStorage.getItem(VOICE_KEY) ?? ""; } catch { return ""; }
+  try { return localStorage.getItem(VOICE_KEY) ?? "shakir"; } catch { return "shakir"; }
 }
-function saveVoicePref(uri: string) {
-  try { localStorage.setItem(VOICE_KEY, uri); } catch { /* ignore */ }
+function saveVoicePref(id: string) {
+  try { localStorage.setItem(VOICE_KEY, id); } catch { /* ignore */ }
 }
 
 export function useSpeech() {
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voiceId, setVoiceId] = useState(loadVoicePref);
-  const pollRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const [speaking, setSpeaking] = useState(false);
+  const currentAudio = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    window.speechSynthesis?.getVoices();
-    try {
-      const u = new SpeechSynthesisUtterance("");
-      u.volume = 0;
-      window.speechSynthesis?.speak(u);
-      window.speechSynthesis?.cancel();
-    } catch { /* ignore */ }
-
-    function refresh() {
-      const v = window.speechSynthesis?.getVoices() ?? [];
-      if (v.length > 0) {
-        setVoices(v);
-        clearInterval(pollRef.current);
-      }
+  const stop = useCallback(() => {
+    if (currentAudio.current) {
+      currentAudio.current.pause();
+      currentAudio.current = null;
     }
-
-    pollRef.current = setInterval(refresh, 150);
-    setTimeout(() => clearInterval(pollRef.current), 8000);
-
-    window.speechSynthesis?.addEventListener("voiceschanged", refresh);
-    return () => {
-      clearInterval(pollRef.current);
-      window.speechSynthesis?.removeEventListener("voiceschanged", refresh);
-    };
+    window.speechSynthesis?.cancel();
+    setSpeaking(false);
   }, []);
 
   const setVoice = useCallback((id: string) => {
@@ -67,50 +46,18 @@ export function useSpeech() {
     saveVoicePref(id);
   }, []);
 
-  function resolveVoice(lang: "ar" | "en"): SpeechSynthesisVoice | null {
-    // If user picked a slot, find a matching voice
-    const slot = VOICE_SLOTS.find(s => s.id === voiceId);
-    if (slot) {
-      const name = lang === "ar" ? slot.arName : slot.enName;
-      const prefix = lang === "ar" ? "ar" : "en";
-      const match = voices.find(v => v.lang.startsWith(prefix) && v.name.includes(name));
-      if (match) return match;
-    }
-    // Fallback: find any neural voice for this language
-    const prefix = lang === "ar" ? "ar" : "en";
-    const neural = voices.find(v => v.lang.startsWith(prefix) && (v.name.includes("Neural") || v.name.includes("Natural")));
-    if (neural) return neural;
-    // Any voice matching language
-    return voices.find(v => v.lang.startsWith(prefix)) ?? null;
-  }
+  const speakKey = useCallback((key: string, lang: "ar" | "en") => {
+    stop();
+    const slot = VOICE_SLOTS.find(s => s.id === voiceId) ?? VOICE_SLOTS[4];
+    const url = `/audio/${slot.id}/${key}_${lang}.mp3`;
+    const audio = new Audio(url);
+    audio.preload = "auto";
+    audio.onended = () => { setSpeaking(false); currentAudio.current = null; };
+    audio.onerror = () => { setSpeaking(false); currentAudio.current = null; };
+    audio.onplay = () => setSpeaking(true);
+    currentAudio.current = audio;
+    audio.play().catch(() => setSpeaking(false));
+  }, [voiceId, stop]);
 
-  function speak(text: string, lang: "ar" | "en") {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-
-    const doSpeak = () => {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang === "ar" ? "ar-SA" : "en-US";
-      utterance.rate = 0.85;
-      utterance.pitch = 1;
-      const voice = resolveVoice(lang);
-      if (voice) utterance.voice = voice;
-      window.speechSynthesis.speak(utterance);
-    };
-
-    const v = window.speechSynthesis.getVoices();
-    if (v.length === 0) {
-      window.speechSynthesis.addEventListener("voiceschanged", doSpeak, { once: true });
-      setTimeout(() => { if (!window.speechSynthesis.speaking) doSpeak(); }, 600);
-      return;
-    }
-    doSpeak();
-  }
-
-  function stop() {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-  }
-
-  return { speak, stop, voices, voiceId, setVoice, VOICE_SLOTS };
+  return { speak: speakKey, stop, speakKey, voiceId, setVoice, VOICE_SLOTS, speaking };
 }
