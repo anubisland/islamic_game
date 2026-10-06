@@ -1,0 +1,18 @@
+{
+  "name": "الألعاب الإسلامية",
+  "short_name": "الألعاب الإسلامية",
+  "id": "/islamic_game/",
+  "start_url": "/islamic_game/",
+  "scope": "/islamic_game/",
+  "display": "standalone",
+  "background_color": "#0d1b2a",
+  "theme_color": "#1b3a5b",
+  "icons": [
+    {
+      "src": "/islamic_game/icon-512.png",
+      "sizes": "2400x1792 any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
